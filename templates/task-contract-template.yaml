@@ -1,0 +1,222 @@
+# 📋 BETTROI BOS - Task Contract Template (YAML)
+
+# Task Contract: Structured task specification for BETTROI BOS
+# This template defines purpose, scopes, KPIs, guardrails, and rollback procedures
+# Version: 1.0 | Date: August 29, 2025 | Timezone: Asia/Dubai
+
+task_id: "T-2025-NNNNN"                    # Unique task identifier
+task_name: "Task Name"                     # Human-readable task name
+created_date: "2025-08-29T09:00:00+04:00"  # ISO 8601 timestamp
+created_by: "maker|seller"                 # Who created this task
+priority: "high|medium|low"                # Task priority level
+
+# BOS Phase Assignment
+bos_phase: "UTI|ITP|PTO|OTI|ECH|DOR"       # Which BOS phase this task belongs to
+phase_owner: "maker|seller"                # Who owns this BOS phase
+
+# Agent Assignment
+agent_id: "<agent-name>"                   # Which agent will execute this task
+agent_owner: "maker|seller"                # Who owns the assigned agent
+backup_agent: "<backup-agent-name>"        # Backup agent if primary fails
+
+# Task Purpose & Goals
+purpose: "<clear outcome description>"     # What this task accomplishes
+success_criteria:                          # How we measure success
+  - "KPI 1: Target value"
+  - "KPI 2: Target value"
+  - "KPI 3: Target value"
+
+# KPI Tags (Golden Rule: Every task must have KPI tags)
+kpi_tags:
+  - "pipeline"                             # Pipeline growth
+  - "win_rate"                             # Conversion rate
+  - "mrr|arr"                              # Monthly/Annual Recurring Revenue
+  - "dso"                                  # Days Sales Outstanding
+  - "cash_runway"                          # Cash runway
+  - "nps|csat|ces"                         # Customer satisfaction metrics
+  - "cycle_time"                           # Process speed
+  - "quality"                              # Quality metrics
+  - "security"                             # Security incidents
+  - "impact"                               # Overall business impact
+
+# Risk Assessment
+risk_class: 1-5                            # Risk level (1=Low, 5=High)
+risk_factors:                              # What makes this task risky
+  - "factor 1"
+  - "factor 2"
+
+# Access & Permissions
+requested_scopes:                          # What data/actions this task needs
+  - "L1.read:customer_data"                # Read customer data (Level 1)
+  - "L2.write:financial_reports"           # Write financial reports (Level 2)
+  - "L3.read:contracts"                    # Read contracts (Level 3)
+  - "L4.read:api_keys"                     # Read API keys (Level 4)
+  - "L5.process:pii"                       # Process personal data (Level 5)
+
+# Human-in-the-Loop (HITL) Rules
+hitl_required_rules:                       # When humans must be involved
+  - "confidence < 80%"                     # Low confidence threshold
+  - "payment_amount >= 10000"              # Large payment threshold
+  - "new_customer_type = true"             # New customer type
+  - "claim_sensitive = true"               # Sensitive claims
+  - "brand_risk = true"                    # Brand risk situations
+  - "discount > policy_limit"              # Discount exceeds policy
+  - "unusual_terms = true"                 # Unusual contract terms
+  - "new_vendor = true"                    # New vendor relationship
+  - "anomalies_detected = true"            # Suspicious patterns
+  - "complaints_received = true"           # Customer complaints
+  - "regulated_advice_needed = true"       # Legal/financial advice
+  - "low_confidence = true"                # Agent uncertainty
+
+# Timing & Scheduling
+ttl_seconds: 900                           # Time to live (15 minutes default)
+start_time: "2025-08-29T09:00:00+04:00"   # When task should start
+deadline: "2025-08-29T17:00:00+04:00"     # When task must complete
+timezone: "Asia/Dubai"                     # Timezone for scheduling
+
+# Dependencies
+dependencies:                              # Tasks that must complete first
+  - "T-2025-00001"                         # Dependency task ID
+  - "T-2025-00002"                         # Another dependency
+
+# Input Data
+input_data:                                # Data this task needs
+  customer_id: "CUST-12345"                # Customer identifier
+  deal_value: 50000                        # Deal value in AED
+  product_type: "premium"                  # Product/service type
+  region: "UAE"                            # Geographic region
+
+# Expected Output
+expected_output:                           # What this task should produce
+  format: "json|csv|pdf|email"             # Output format
+  fields:                                  # Required output fields
+    - "customer_name"
+    - "deal_value"
+    - "status"
+    - "next_steps"
+
+# Quality Gates
+quality_gates:                             # Quality checks before completion
+  - "data_validation"                      # Validate input data
+  - "format_check"                         # Check output format
+  - "compliance_review"                    # Review compliance
+  - "approval_required"                    # Human approval needed
+
+# Rollback Procedure
+rollback_procedure:                        # How to undo this task
+  trigger_conditions:                      # When to trigger rollback
+    - "error_rate > 5%"                    # High error rate
+    - "customer_complaint"                 # Customer complaint
+    - "security_breach"                    # Security issue
+    - "policy_violation"                   # Policy violation
+  
+  rollback_steps:                          # Steps to undo the task
+    - "step 1: Pause task execution"
+    - "step 2: Revert data changes"
+    - "step 3: Notify stakeholders"
+    - "step 4: Document incident"
+    - "step 5: Implement fixes"
+
+# Monitoring & Alerts
+monitoring:                                # How to monitor this task
+  metrics:                                 # Metrics to track
+    - "execution_time"
+    - "success_rate"
+    - "error_count"
+    - "customer_satisfaction"
+  
+  alerts:                                  # Alert conditions
+    - "execution_time > 300"               # Takes too long
+    - "error_rate > 2%"                    # Too many errors
+    - "success_rate < 90%"                 # Low success rate
+
+# Notifications
+notify:                                    # Who to notify
+  on_start:                                # When task starts
+    - "maker"
+    - "seller"
+    - "digital_coo"
+  
+  on_completion:                           # When task completes
+    - "maker"
+    - "seller"
+    - "digital_cfo"
+  
+  on_failure:                              # When task fails
+    - "maker"
+    - "seller"
+    - "digital_cto"
+    - "digital_ciso"
+
+# Compliance & Legal
+compliance:                                # Compliance requirements
+  data_residency: "UAE"                    # Where data must stay
+  privacy_laws:                            # Privacy laws to follow
+    - "UAE_PDPL"
+    - "India_DPDP"
+    - "EU_GDPR"
+  
+  consent_required: true|false             # Customer consent needed
+  dpa_required: true|false                 # Data processing agreement needed
+
+# Cost & Budget
+cost_limits:                               # Cost constraints
+  max_cost_aed: 1000                       # Maximum cost in AED
+  cost_center: "sales|marketing|ops"       # Cost center
+  budget_owner: "maker|seller"             # Who owns the budget
+
+# Documentation
+documentation:                             # Documentation requirements
+  required: true|false                     # Documentation required
+  format: "markdown|pdf|video"             # Documentation format
+  audience: "internal|external|customers"  # Who needs the docs
+
+# Tags & Categories
+tags:                                      # Task categorization
+  - "urgent"                               # Urgent tasks
+  - "recurring"                            # Recurring tasks
+  - "one_time"                             # One-time tasks
+  - "automated"                            # Automated tasks
+  - "manual"                               # Manual tasks
+
+# Status Tracking
+status: "pending|running|completed|failed|cancelled"
+progress_percentage: 0                     # Progress percentage (0-100)
+current_step: "step_name"                  # Current step in execution
+
+# Audit Trail
+audit_trail:                               # Track all changes
+  created_by: "user_id"
+  created_at: "2025-08-29T09:00:00+04:00"
+  modified_by: "user_id"
+  modified_at: "2025-08-29T10:00:00+04:00"
+  approved_by: "user_id"
+  approved_at: "2025-08-29T11:00:00+04:00"
+
+# Notes & Comments
+notes:                                     # Additional notes
+  - "Important consideration 1"
+  - "Special instruction 2"
+  - "Risk mitigation 3"
+
+# Version Control
+version: "1.0"                             # Template version
+last_updated: "2025-08-29T09:00:00+04:00"  # Last update timestamp
+
+---
+
+# Example Task Contract
+
+task_id: "T-2025-00001"
+task_name: "Lead Qualification for New Prospect"
+bos_phase: "UTI"
+agent_id: "digital_cro_agent"
+purpose: "Qualify new prospect and determine if they meet ICP criteria"
+kpi_tags: ["pipeline", "win_rate"]
+risk_class: 2
+requested_scopes: ["L1.read:prospect_data", "L2.write:lead_status"]
+hitl_required_rules: ["confidence < 80%", "new_customer_type = true"]
+ttl_seconds: 1800
+rollback_procedure: "Revert lead status to unqualified and notify sales team"
+notify: ["seller", "digital_cmo"]
+status: "pending"

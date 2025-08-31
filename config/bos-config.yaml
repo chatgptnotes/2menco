@@ -1,0 +1,521 @@
+# ⚙️ BETTROI BOS - Main Configuration File
+
+# BETTROI BOS System Configuration
+# Version: 1.0 | Date: August 29, 2025 | Timezone: Asia/Dubai
+# Owner: BT (Biji Tharakan Thomas)
+
+# =============================================================================
+# COMPANY INFORMATION
+# =============================================================================
+
+company:
+  name: "BETTROI BOS"
+  owner: "BT (Biji Tharakan Thomas)"
+  timezone: "Asia/Dubai"
+  currency: "AED"
+  fiscal_year_start: "2025-01-01"
+  version: "1.0"
+
+# =============================================================================
+# HUMAN LEADERSHIP
+# =============================================================================
+
+leadership:
+  maker:
+    name: "Maker"
+    role: "Product, Technology, Platform"
+    permissions:
+      - "approve_product_changes"
+      - "approve_tech_changes"
+      - "approve_data_changes"
+      - "break_glass_platform"
+      - "break_glass_secrets"
+      - "dual_control_escrow"
+  
+  seller:
+    name: "Seller"
+    role: "Revenue, Narrative, Relationships"
+    permissions:
+      - "approve_pricing"
+      - "approve_messaging"
+      - "approve_client_terms"
+      - "break_glass_customer_systems"
+
+# =============================================================================
+# DIGITAL CxO CONFIGURATION
+# =============================================================================
+
+digital_cxos:
+  digital_ceo:
+    name: "Digital CEO"
+    purpose: "Strategy synthesis and overall direction"
+    owner: "maker"
+    bos_phases: ["all"]
+    
+  digital_coo:
+    name: "Digital COO"
+    purpose: "Turn strategy into execution, govern DOR cadences"
+    owner: "maker"
+    bos_phases: ["DOR", "PTO"]
+    
+  digital_cfo:
+    name: "Digital CFO"
+    purpose: "Cash, runway, controls, payments, pricing rules"
+    owner: "maker"
+    bos_phases: ["OTI", "PTO"]
+    
+  digital_cio:
+    name: "Digital CIO"
+    purpose: "Internal systems, tools, access governance"
+    owner: "maker"
+    bos_phases: ["DOR"]
+    
+  digital_cto:
+    name: "Digital CTO"
+    purpose: "Platform & architecture, technical north"
+    owner: "maker"
+    bos_phases: ["all"]
+    
+  digital_cdo:
+    name: "Digital CDO"
+    purpose: "Data quality, lineage, governance for RAG and analytics"
+    owner: "maker"
+    bos_phases: ["all"]
+    
+  digital_ciso:
+    name: "Digital CISO"
+    purpose: "Threat model, monitoring, incident response"
+    owner: "maker"
+    bos_phases: ["all"]
+    
+  digital_caio:
+    name: "Digital CAIO"
+    purpose: "Model selection, safety, evaluations, cost/quality trade-offs"
+    owner: "maker"
+    bos_phases: ["all"]
+    
+  digital_cmo:
+    name: "Digital CMO"
+    purpose: "Demand generation, attribution hygiene for optimization"
+    owner: "seller"
+    bos_phases: ["UTI"]
+    
+  digital_cro:
+    name: "Digital CRO"
+    purpose: "Pipeline, pricing, retention, revenue KPIs"
+    owner: "seller"
+    bos_phases: ["UTI", "ITP"]
+    
+  digital_cpo:
+    name: "Digital CPO"
+    purpose: "Roadmap, experiments, signals to features"
+    owner: "maker"
+    bos_phases: ["ITP"]
+    
+  digital_cxo:
+    name: "Digital CXO"
+    purpose: "End-to-end experience, reduce user friction"
+    owner: "seller"
+    bos_phases: ["ECH"]
+    
+  digital_clo:
+    name: "Digital CLO"
+    purpose: "Contracts, IP, regulatory, approval gates"
+    owner: "seller"
+    bos_phases: ["PTO", "ITP"]
+    
+  digital_cso:
+    name: "Digital CSO"
+    purpose: "Scenarios & bets, quarterly focus & KPI weights"
+    owner: "maker"
+    bos_phases: ["all"]
+
+# =============================================================================
+# BOS PHASES CONFIGURATION
+# =============================================================================
+
+bos_phases:
+  DOR:
+    name: "Daily Operating Rhythm"
+    description: "Daily check-in system"
+    owner: "maker"
+    digital_cxo: "digital_coo"
+    primary_kpis: ["cycle_time", "quality", "security"]
+    hitl_triggers:
+      - "SEV-1/2 incidents"
+      - "breach indicators"
+      - "scope conflict"
+    
+  UTI:
+    name: "Universe → Inquiry"
+    description: "Finding new customers"
+    owner: "seller"
+    digital_cxo: ["digital_cmo", "digital_cro"]
+    primary_kpis: ["pipeline", "cpl", "qualified_leads"]
+    hitl_triggers:
+      - "new segment"
+      - "claim_sensitive"
+      - "brand risk"
+    
+  ITP:
+    name: "Inquiry → Proposal"
+    description: "Making offers to customers"
+    owner: "seller"
+    digital_cxo: ["digital_cro", "digital_cpo"]
+    primary_kpis: ["win_rate", "cycle_time", "price_discipline"]
+    hitl_triggers:
+      - "discount > policy"
+      - "term changes"
+    
+  PTO:
+    name: "Proposal → Order"
+    description: "Turning offers into orders"
+    owner: "maker"
+    digital_cxo: ["digital_coo", "digital_cfo"]
+    primary_kpis: ["order_conversion", "on_time_contract"]
+    hitl_triggers:
+      - "new vendor"
+      - "unusual terms"
+    
+  OTI:
+    name: "Order → Invoice"
+    description: "Getting paid"
+    owner: "maker"
+    digital_cxo: "digital_cfo"
+    primary_kpis: ["dso", "cash_runway"]
+    hitl_triggers:
+      - "payment >= threshold"
+      - "anomalies"
+    
+  ECH:
+    name: "Ensuring Customer Happiness"
+    description: "Making customers happy"
+    owner: "seller"
+    digital_cxo: "digital_cxo"
+    primary_kpis: ["nps", "csat", "nrr"]
+    hitl_triggers:
+      - "complaints"
+      - "regulated advice"
+      - "low confidence"
+
+# =============================================================================
+# ACCESS LEVELS CONFIGURATION
+# =============================================================================
+
+access_levels:
+  L0_Public:
+    name: "Public"
+    description: "Website, public docs"
+    permissions: ["read"]
+    restrictions: ["no_pii"]
+    
+  L1_Internal:
+    name: "Internal"
+    description: "General notes, non-sensitive metrics"
+    permissions: ["read", "write_by_scope"]
+    users: ["maker", "seller", "agents"]
+    
+  L2_Confidential:
+    name: "Confidential"
+    description: "Roadmaps, non-public financials"
+    permissions: ["read", "write"]
+    users: ["maker", "seller"]
+    agents: ["by_scope"]
+    
+  L3_Restricted:
+    name: "Restricted"
+    description: "Client files, contracts, negotiations"
+    permissions: ["read", "write"]
+    users: ["seller_write", "maker_read"]
+    agents: ["minimal"]
+    requirement: "need_to_know"
+    
+  L4_Secret:
+    name: "Secret"
+    description: "API keys, model weights, trade secrets"
+    permissions: ["read", "write"]
+    users: ["maker_only", "seller_read_if_approved"]
+    restriction: "never_in_logs"
+    
+  L5_Regulated:
+    name: "Regulated"
+    description: "PII/PHI/PCI data"
+    permissions: ["masked", "process_with_consent"]
+    requirements: ["residency", "dpa", "dpia"]
+
+# =============================================================================
+# KPI CONFIGURATION
+# =============================================================================
+
+kpis:
+  pipeline:
+    name: "Pipeline"
+    description: "Number of potential customers"
+    target: "grow_monthly"
+    measurement: "qualified_leads_count"
+    
+  win_rate:
+    name: "Win Rate"
+    description: "Percentage of leads that become customers"
+    target: "increase"
+    measurement: "deals_won / deals_total"
+    
+  mrr:
+    name: "Monthly Recurring Revenue"
+    description: "Monthly recurring revenue"
+    target: "grow_monthly"
+    measurement: "monthly_revenue"
+    
+  arr:
+    name: "Annual Recurring Revenue"
+    description: "Annual recurring revenue"
+    target: "grow_yearly"
+    measurement: "annual_revenue"
+    
+  dso:
+    name: "Days Sales Outstanding"
+    description: "Average days to collect payment"
+    target: "decrease"
+    measurement: "average_payment_days"
+    
+  cash_runway:
+    name: "Cash Runway"
+    description: "How long cash will last"
+    target: "maintain_minimum"
+    measurement: "cash / monthly_burn"
+    
+  nps:
+    name: "Net Promoter Score"
+    description: "Customer loyalty score"
+    target: "increase"
+    measurement: "promoters - detractors"
+    
+  csat:
+    name: "Customer Satisfaction"
+    description: "Customer satisfaction score"
+    target: "maintain_high"
+    measurement: "satisfaction_score"
+    
+  cycle_time:
+    name: "Cycle Time"
+    description: "Time to complete processes"
+    target: "decrease"
+    measurement: "average_process_days"
+    
+  quality:
+    name: "Quality"
+    description: "Quality metrics"
+    target: "maintain_high"
+    measurement: "defect_rate"
+    
+  security:
+    name: "Security"
+    description: "Security incidents"
+    target: "zero"
+    measurement: "incident_count"
+
+# =============================================================================
+# THRESHOLDS & LIMITS
+# =============================================================================
+
+thresholds:
+  payments:
+    dual_control_amount: 10000  # AED
+    large_payment_alert: 5000   # AED
+    
+  outreach:
+    max_emails_per_week: 2
+    max_whatsapp_per_week: 1
+    opt_out_required: true
+    
+  model_drift:
+    quality_drop_alert: 5  # percentage
+    
+  l5_processing:
+    require_contract: true
+    require_consent: true
+    require_residency: true
+    
+  new_vendor:
+    require_seller_approval: true
+    require_compliance_checklist: true
+    
+  kpi_variance:
+    rca_trigger: 10  # percentage
+    
+  confidence:
+    hitl_threshold: 80  # percentage
+
+# =============================================================================
+# SECURITY CONFIGURATION
+# =============================================================================
+
+security:
+  authentication:
+    mfa_required: true
+    sso_enabled: true
+    session_timeout: 3600  # seconds
+    
+  encryption:
+    data_at_rest: true
+    data_in_transit: true
+    key_rotation: 90  # days
+    
+  monitoring:
+    siem_enabled: true
+    anomaly_detection: true
+    alert_threshold: 5  # minutes
+    
+  compliance:
+    gdpr_enabled: true
+    pdpl_enabled: true
+    dpdp_enabled: true
+    data_residency: "UAE"
+
+# =============================================================================
+# AGENT CONFIGURATION
+# =============================================================================
+
+agents:
+  lifecycle:
+    proposal_required: true
+    sandbox_testing: true
+    red_team_testing: true
+    policy_review: true
+    dpia_dpa_required: true
+    staged_rollout: [10, 50, 100]
+    observability_required: true
+    quarterly_recert: true
+    
+  safety:
+    self_pause_enabled: true
+    confidence_threshold: 80
+    policy_conflict_pause: true
+    append_only_ledger: true
+    
+  performance:
+    max_response_time: 300  # seconds
+    max_error_rate: 2  # percentage
+    min_uptime: 99.9  # percentage
+
+# =============================================================================
+# INCIDENT RESPONSE
+# =============================================================================
+
+incidents:
+  severity_levels:
+    SEV1:
+      description: "Critical - Service completely down"
+      response_time: 15  # minutes
+      resolution_time: 60  # minutes
+      
+    SEV2:
+      description: "High - Major functionality impaired"
+      response_time: 30  # minutes
+      resolution_time: 240  # minutes
+      
+    SEV3:
+      description: "Medium - Minor functionality impaired"
+      response_time: 120  # minutes
+      resolution_time: 480  # minutes
+      
+    SEV4:
+      description: "Low - Cosmetic issues"
+      response_time: 480  # minutes
+      resolution_time: 1440  # minutes
+      
+  postmortem:
+    required_for: ["SEV1", "SEV2"]
+    deadline: 48  # hours
+
+# =============================================================================
+# BUSINESS CONTINUITY
+# =============================================================================
+
+business_continuity:
+  rto: 4  # hours - Recovery Time Objective
+  rpo: 1  # hour - Recovery Point Objective
+  quarterly_drills: true
+  backup_frequency: "daily"
+  offsite_storage: true
+
+# =============================================================================
+# NOTIFICATIONS
+# =============================================================================
+
+notifications:
+  channels:
+    email: true
+    slack: true
+    whatsapp: true
+    sms: false
+    
+  recipients:
+    maker: ["maker@bettroi.com"]
+    seller: ["seller@bettroi.com"]
+    digital_cxos: ["cxos@bettroi.com"]
+    
+  escalation:
+    level1_timeout: 15  # minutes
+    level2_timeout: 30  # minutes
+    level3_timeout: 60  # minutes
+
+# =============================================================================
+# MONITORING & ALERTS
+# =============================================================================
+
+monitoring:
+  metrics:
+    collection_interval: 60  # seconds
+    retention_period: 90  # days
+    
+  dashboards:
+    ccd_enabled: true
+    real_time_updates: true
+    mobile_accessible: true
+    
+  alerts:
+    email_enabled: true
+    slack_enabled: true
+    escalation_enabled: true
+
+# =============================================================================
+# MILLION DOLLAR PLAN CONFIGURATION
+# =============================================================================
+
+million_dollar_plan:
+  target_revenue: 1000000  # AED
+  timeline_months: 9
+  start_date: "2025-09-01"
+  end_date: "2026-05-31"
+  
+  monthly_targets:
+    month1: 50000
+    month2: 75000
+    month3: 100000
+    month4: 125000
+    month5: 150000
+    month6: 175000
+    month7: 200000
+    month8: 100000
+    month9: 25000
+    
+  success_metrics:
+    mrr_target_month6: 100000
+    arr_target_month9: 1200000
+    cac_limit: 5000
+    ltv_target: 50000
+    ltv_cac_ratio: 10
+    win_rate_target: 60
+    customer_satisfaction: 8
+    nrr_target: 120
+
+# =============================================================================
+# VERSION CONTROL
+# =============================================================================
+
+version_control:
+  current_version: "1.0"
+  last_updated: "2025-08-29"
+  change_log: "Initial configuration"
+  next_review: "2025-09-29"
