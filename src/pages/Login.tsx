@@ -20,7 +20,7 @@ const Login = () => {
 
     try {
       await login(email, password)
-      navigate('/')
+      navigate('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
@@ -149,6 +149,14 @@ const Login = () => {
               Contact your administrator
             </a>
           </p>
+          <div className="mt-4">
+            <a 
+              href="/" 
+              className="text-sm text-primary-600 hover:text-primary-500 underline"
+            >
+              ← Back to Landing Page
+            </a>
+          </div>
         </div>
       </div>
     </div>

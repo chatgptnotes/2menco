@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Agents from './pages/Agents'
@@ -37,8 +38,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   return (
     <Routes>
+      {/* Public Landing Page */}
+      <Route path="/" element={<Landing />} />
+      
+      {/* Login Page */}
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={
+      
+      {/* Protected Dashboard System */}
+      <Route path="/dashboard" element={
         <ProtectedRoute>
           <Layout />
         </ProtectedRoute>
@@ -52,6 +59,17 @@ const AppRoutes = () => {
         <Route path="settings" element={<Settings />} />
         <Route path="help" element={<Help />} />
       </Route>
+      
+      {/* Redirect old routes to new structure */}
+      <Route path="/agents" element={<Navigate to="/dashboard/agents" replace />} />
+      <Route path="/kpis" element={<Navigate to="/dashboard/kpis" replace />} />
+      <Route path="/analytics" element={<Navigate to="/dashboard/analytics" replace />} />
+      <Route path="/tasks" element={<Navigate to="/dashboard/tasks" replace />} />
+      <Route path="/documents" element={<Navigate to="/dashboard/documents" replace />} />
+      <Route path="/settings" element={<Navigate to="/dashboard/settings" replace />} />
+      <Route path="/help" element={<Navigate to="/dashboard/help" replace />} />
+      
+      {/* Catch all - redirect to landing */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

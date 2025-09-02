@@ -16,14 +16,14 @@ import {
 } from 'lucide-react'
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Digital Agents', href: '/agents', icon: Users },
-  { name: 'KPIs & Metrics', href: '/kpis', icon: BarChart3 },
-  { name: 'Analytics', href: '/analytics', icon: AnalyticsIcon },
-  { name: 'Task Management', href: '/tasks', icon: CheckSquare },
-  { name: 'Documents', href: '/documents', icon: FileText },
-  { name: 'Settings', href: '/settings', icon: Settings },
-  { name: 'Help & Support', href: '/help', icon: HelpCircle },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Digital Agents', href: '/dashboard/agents', icon: Users },
+  { name: 'KPIs & Metrics', href: '/dashboard/kpis', icon: BarChart3 },
+  { name: 'Analytics', href: '/dashboard/analytics', icon: AnalyticsIcon },
+  { name: 'Task Management', href: '/dashboard/tasks', icon: CheckSquare },
+  { name: 'Documents', href: '/dashboard/documents', icon: FileText },
+  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: 'Help & Support', href: '/dashboard/help', icon: HelpCircle },
 ]
 
 const Sidebar = () => {
