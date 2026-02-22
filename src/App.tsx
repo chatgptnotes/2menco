@@ -19,6 +19,13 @@ import CFO from './pages/CFO'
 import Claims from './pages/Claims'
 import Invoices from './pages/Invoices'
 
+const AuthRedirect = () => {
+  const { isAuthenticated, isLoading } = useAuth()
+  if (isLoading) return null
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />
+  return <Landing />
+}
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth()
   if (isLoading) return (
@@ -35,7 +42,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => (
   <Routes>
-    <Route path="/" element={<Landing />} />
+    <Route path="/" element={<AuthRedirect />} />
     <Route path="/login" element={<Login />} />
     <Route path="/signup" element={<Signup />} />
     <Route path="/dashboard" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
