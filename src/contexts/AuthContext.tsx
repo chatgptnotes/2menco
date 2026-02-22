@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { supabase } from '../lib/supabaseClient'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 interface User {
   id: string
@@ -14,6 +16,8 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
+  signup: (email: string, password: string, name: string) => Promise<void>
+  loginWithMagicLink: (email: string) => Promise<void>
   logout: () => void
   updateUser: (userData: Partial<User>) => void
 }
@@ -28,6 +32,16 @@ export const useAuth = () => {
   return context
 }
 
+function mapSupabaseUser(su: SupabaseUser): User {
+  return {
+    id: su.id,
+    name: su.user_metadata?.full_name || su.email?.split('@')[0] || 'User',
+    email: su.email || '',
+    role: 'owner',
+    permissions: ['read', 'write', 'admin', 'delete'],
+  }
+}
+
 interface AuthProviderProps {
   children: ReactNode
 }
@@ -37,67 +51,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check for existing session
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem('auth_token')
-        if (token) {
-          // Mock user data - replace with actual API call
-          const mockUser: User = {
-            id: '1',
-            name: 'BT (Biji Tharakan Thomas)',
-            email: 'bt@bettroi.com',
-            role: 'owner',
-            avatar: '/api/avatars/1',
-            permissions: ['read', 'write', 'admin', 'delete']
-          }
-          setUser(mockUser)
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) setUser(mapSupabaseUser(session.user))
+      setIsLoading(false)
+    })
 
-    checkAuth()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(mapSupabaseUser(session.user))
+      } else {
+        setUser(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true)
-    try {
-      // Mock login - replace with actual API call
-      if (email === 'bt@bettroi.com' && password === 'password') {
-        const mockUser: User = {
-          id: '1',
-          name: 'BT (Biji Tharakan Thomas)',
-          email: 'bt@bettroi.com',
-          role: 'owner',
-          avatar: '/api/avatars/1',
-          permissions: ['read', 'write', 'admin', 'delete']
-        }
-        
-        localStorage.setItem('auth_token', 'mock_token_123')
-        setUser(mockUser)
-      } else {
-        throw new Error('Invalid credentials')
-      }
-    } catch (error) {
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw new Error(error.message)
   }
 
-  const logout = () => {
-    localStorage.removeItem('auth_token')
+  const signup = async (email: string, password: string, name: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: name } },
+    })
+    if (error) throw new Error(error.message)
+  }
+
+  const loginWithMagicLink = async (email: string) => {
+    const { error } = await supabase.auth.signInWithOtp({ email })
+    if (error) throw new Error(error.message)
+  }
+
+  const logout = async () => {
+    await supabase.auth.signOut()
     setUser(null)
   }
 
   const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      setUser({ ...user, ...userData })
-    }
+    if (user) setUser({ ...user, ...userData })
   }
 
   const value: AuthContextType = {
@@ -105,13 +100,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: !!user,
     isLoading,
     login,
+    signup,
+    loginWithMagicLink,
     logout,
-    updateUser
+    updateUser,
   }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

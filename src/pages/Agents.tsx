@@ -1,117 +1,49 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
-  Play, 
-  Pause, 
-  Settings, 
-  Activity, 
-  CheckCircle, 
-  AlertCircle, 
-  Clock,
-  TrendingUp,
-  Users,
-  DollarSign,
-  BarChart3,
-  CheckSquare,
-  FileText,
+  Pause, Activity, CheckCircle, AlertCircle, Clock,
+  TrendingUp, Users, DollarSign, BarChart3, CheckSquare, FileText,
   Settings as SettingsIcon
 } from 'lucide-react'
+import { supabase } from '../lib/supabaseClient'
 
 interface Agent {
   id: string
   name: string
-  role: string
-  status: 'active' | 'inactive' | 'error' | 'maintenance'
-  performance: number
-  uptime: number
-  lastActivity: string
-  description: string
-  icon: React.ReactNode
-  color: string
+  type: string
+  status: string
+  config: Record<string, unknown>
+  metrics: Record<string, unknown>
+}
+
+const iconMap: Record<string, React.ReactNode> = {
+  cmo: <Users className="h-6 w-6" />,
+  cro: <DollarSign className="h-6 w-6" />,
+  cfo: <BarChart3 className="h-6 w-6" />,
+  coo: <CheckSquare className="h-6 w-6" />,
+  cto: <SettingsIcon className="h-6 w-6" />,
+  cxo: <FileText className="h-6 w-6" />,
+}
+
+const colorMap: Record<string, string> = {
+  cmo: 'bg-blue-500', cro: 'bg-green-500', cfo: 'bg-purple-500',
+  coo: 'bg-orange-500', cto: 'bg-indigo-500', cxo: 'bg-pink-500',
+}
+
+const roleMap: Record<string, string> = {
+  cmo: 'Chief Marketing Officer', cro: 'Chief Revenue Officer', cfo: 'Chief Financial Officer',
+  coo: 'Chief Operations Officer', cto: 'Chief Technology Officer', cxo: 'Chief Experience Officer',
 }
 
 const Agents = () => {
-  const [agents, setAgents] = useState<Agent[]>([
-    {
-      id: 'cmo',
-      name: 'Digital CMO',
-      role: 'Chief Marketing Officer',
-      status: 'active',
-      performance: 94,
-      uptime: 99.8,
-      lastActivity: '2 minutes ago',
-      description: 'Handles marketing campaigns, lead generation, and brand management',
-      icon: <Users className="h-6 w-6" />,
-      color: 'bg-blue-500'
-    },
-    {
-      id: 'cro',
-      name: 'Digital CRO',
-      role: 'Chief Revenue Officer',
-      status: 'active',
-      performance: 87,
-      uptime: 99.5,
-      lastActivity: '5 minutes ago',
-      description: 'Manages sales pipeline, conversion optimization, and revenue growth',
-      icon: <DollarSign className="h-6 w-6" />,
-      color: 'bg-green-500'
-    },
-    {
-      id: 'cfo',
-      name: 'Digital CFO',
-      role: 'Chief Financial Officer',
-      status: 'active',
-      performance: 92,
-      uptime: 99.9,
-      lastActivity: '1 minute ago',
-      description: 'Tracks financial metrics, cash flow, and budget management',
-      icon: <BarChart3 className="h-6 w-6" />,
-      color: 'bg-purple-500'
-    },
-    {
-      id: 'coo',
-      name: 'Digital COO',
-      role: 'Chief Operations Officer',
-      status: 'maintenance',
-      performance: 78,
-      uptime: 95.2,
-      lastActivity: '1 hour ago',
-      description: 'Manages daily operations, process optimization, and team coordination',
-      icon: <CheckSquare className="h-6 w-6" />,
-      color: 'bg-orange-500'
-    },
-    {
-      id: 'cto',
-      name: 'Digital CTO',
-      role: 'Chief Technology Officer',
-      status: 'active',
-      performance: 96,
-      uptime: 99.9,
-      lastActivity: '30 seconds ago',
-      description: 'Manages technology infrastructure, security, and system architecture',
-      icon: <SettingsIcon className="h-6 w-6" />,
-      color: 'bg-indigo-500'
-    },
-    {
-      id: 'cxo',
-      name: 'Digital CXO',
-      role: 'Chief Experience Officer',
-      status: 'error',
-      performance: 65,
-      uptime: 87.3,
-      lastActivity: '3 hours ago',
-      description: 'Manages customer experience, satisfaction, and retention',
-      icon: <FileText className="h-6 w-6" />,
-      color: 'bg-pink-500'
-    }
-  ])
+  const [agents, setAgents] = useState<Agent[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const toggleAgentStatus = (agentId: string) => {
-    setAgents(prev => prev.map(agent => 
-      agent.id === agentId 
-        ? { ...agent, status: agent.status === 'active' ? 'inactive' : 'active' }
-        : agent
-    ))
-  }
+  useEffect(() => {
+    supabase.from('agents').select('*').then(({ data }) => {
+      if (data && data.length > 0) setAgents(data)
+      setLoading(false)
+    })
+  }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -126,137 +58,85 @@ const Agents = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'active': return <CheckCircle className="h-4 w-4" />
-      case 'inactive': return <Pause className="h-4 w-4" />
       case 'error': return <AlertCircle className="h-4 w-4" />
       case 'maintenance': return <Clock className="h-4 w-4" />
-      default: return <Clock className="h-4 w-4" />
+      default: return <Pause className="h-4 w-4" />
     }
   }
 
-  const getPerformanceColor = (performance: number) => {
-    if (performance >= 90) return 'text-success-600'
-    if (performance >= 80) return 'text-warning-600'
-    return 'text-danger-600'
-  }
+  const performance = (a: Agent) => (a.metrics as { performance?: number })?.performance ?? 85
+  const uptime = (a: Agent) => (a.metrics as { uptime?: number })?.uptime ?? 99
+
+  const getPerformanceColor = (p: number) => p >= 90 ? 'text-success-600' : p >= 80 ? 'text-warning-600' : 'text-danger-600'
+
+  if (loading) return <div className="text-center py-12"><p className="text-gray-500">Loading agents...</p></div>
+
+  if (agents.length === 0) return (
+    <div className="space-y-6">
+      <div><h1 className="text-2xl font-bold text-gray-900">Digital Agents</h1>
+      <p className="text-gray-600">No agents found. Run the SQL migration and seed script to populate data.</p></div>
+    </div>
+  )
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Digital Agents</h1>
-          <p className="text-gray-600">Manage your AI-powered business team</p>
-        </div>
-        <button className="btn btn-primary">
-          <Users className="h-4 w-4 mr-2" />
-          Deploy New Agent
-        </button>
+        <div><h1 className="text-2xl font-bold text-gray-900">Digital Agents</h1>
+        <p className="text-gray-600">Manage your AI-powered business team</p></div>
+        <button className="btn btn-primary"><Users className="h-4 w-4 mr-2" />Deploy New Agent</button>
       </div>
 
-      {/* Agent Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {agents.map((agent) => (
-          <div key={agent.id} className="card hover:shadow-lg transition-shadow">
-            {/* Agent Header */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white ${agent.color}`}>
-                  {agent.icon}
+        {agents.map((agent) => {
+          const perf = performance(agent)
+          return (
+            <div key={agent.id} className="card hover:shadow-lg transition-shadow">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white ${colorMap[agent.type] || 'bg-gray-500'}`}>
+                    {iconMap[agent.type] || <Users className="h-6 w-6" />}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{agent.name}</h3>
+                    <p className="text-sm text-gray-500">{roleMap[agent.type] || agent.type.toUpperCase()}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{agent.name}</h3>
-                  <p className="text-sm text-gray-500">{agent.role}</p>
+              </div>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(agent.status)}`}>
+                  {getStatusIcon(agent.status)}<span>{agent.status}</span>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => toggleAgentStatus(agent.id)}
-                  className={`p-2 rounded-md hover:bg-gray-100 ${
-                    agent.status === 'active' ? 'text-success-600' : 'text-gray-400'
-                  }`}
-                >
-                  {agent.status === 'active' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                </button>
-                <button className="p-2 rounded-md hover:bg-gray-100 text-gray-400">
-                  <Settings className="h-4 w-4" />
-                </button>
+              <p className="text-sm text-gray-600 mb-4">{(agent.config as { description?: string })?.description || `AI-powered ${roleMap[agent.type] || agent.type}`}</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">Performance</span>
+                  <span className={`text-sm font-medium ${getPerformanceColor(perf)}`}>{perf}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full ${getPerformanceColor(perf).replace('text-', 'bg-')}`} style={{ width: `${perf}%` }} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">Uptime</span>
+                  <span className="text-sm font-medium text-gray-900">{uptime(agent)}%</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-200 flex space-x-2">
+                <button className="btn btn-secondary flex-1 text-xs"><Activity className="h-3 w-3 mr-1" />Monitor</button>
+                <button className="btn btn-primary flex-1 text-xs"><TrendingUp className="h-3 w-3 mr-1" />Optimize</button>
               </div>
             </div>
-
-            {/* Status */}
-            <div className="flex items-center space-x-2 mb-4">
-              <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(agent.status)}`}>
-                {getStatusIcon(agent.status)}
-                <span className="ml-1">{agent.status}</span>
-              </div>
-            </div>
-
-            {/* Description */}
-            <p className="text-sm text-gray-600 mb-4">{agent.description}</p>
-
-            {/* Metrics */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Performance</span>
-                <span className={`text-sm font-medium ${getPerformanceColor(agent.performance)}`}>
-                  {agent.performance}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className={`h-2 rounded-full ${getPerformanceColor(agent.performance).replace('text-', 'bg-')}`}
-                  style={{ width: `${agent.performance}%` }}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Uptime</span>
-                <span className="text-sm font-medium text-gray-900">{agent.uptime}%</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Last Activity</span>
-                <span className="text-sm text-gray-900">{agent.lastActivity}</span>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex space-x-2">
-                <button className="btn btn-secondary flex-1 text-xs">
-                  <Activity className="h-3 w-3 mr-1" />
-                  Monitor
-                </button>
-                <button className="btn btn-primary flex-1 text-xs">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  Optimize
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
-      {/* Agent Performance Summary */}
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Agent Performance Summary</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-success-600">4</div>
-            <div className="text-sm text-gray-500">Active Agents</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-warning-600">1</div>
-            <div className="text-sm text-gray-500">In Maintenance</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-danger-600">1</div>
-            <div className="text-sm text-gray-500">Needs Attention</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary-600">85.3%</div>
-            <div className="text-sm text-gray-500">Average Performance</div>
-          </div>
+          <div className="text-center"><div className="text-2xl font-bold text-success-600">{agents.filter(a => a.status === 'active').length}</div><div className="text-sm text-gray-500">Active</div></div>
+          <div className="text-center"><div className="text-2xl font-bold text-warning-600">{agents.filter(a => a.status === 'maintenance').length}</div><div className="text-sm text-gray-500">Maintenance</div></div>
+          <div className="text-center"><div className="text-2xl font-bold text-danger-600">{agents.filter(a => a.status === 'error').length}</div><div className="text-sm text-gray-500">Needs Attention</div></div>
+          <div className="text-center"><div className="text-2xl font-bold text-primary-600">{Math.round(agents.reduce((s, a) => s + performance(a), 0) / agents.length)}%</div><div className="text-sm text-gray-500">Avg Performance</div></div>
         </div>
       </div>
     </div>

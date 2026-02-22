@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { 
   TrendingUp, 
   Users, 
@@ -5,13 +6,43 @@ import {
   Target, 
   Calendar,
   CheckCircle,
-  AlertCircle,
-  Clock
+  BarChart3,
+  CheckSquare
 } from 'lucide-react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import { supabase } from '../lib/supabaseClient'
+
+interface AgentRow { id: string; name: string; type: string; status: string; metrics: Record<string, unknown> }
+interface KpiRow { id: string; name: string; current_value: number; target_value: number; trend: string; category: string }
+interface TaskRow { id: string; title: string; status: string; priority: string; due_date: string }
 
 const Dashboard = () => {
-  // Mock data for charts
+  const [agents, setAgents] = useState<AgentRow[]>([])
+  const [kpis, setKpis] = useState<KpiRow[]>([])
+  const [tasks, setTasks] = useState<TaskRow[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const load = async () => {
+      const [a, k, t] = await Promise.all([
+        supabase.from('agents').select('*'),
+        supabase.from('kpis').select('*').limit(10),
+        supabase.from('agent_tasks').select('*').order('created_at', { ascending: false }).limit(5),
+      ])
+      if (a.data) setAgents(a.data)
+      if (k.data) setKpis(k.data)
+      if (t.data) setTasks(t.data)
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  const activeAgents = agents.filter(a => a.status === 'active').length
+  const totalAgents = agents.length || 6
+  const totalRevenue = kpis.find(k => k.name?.toLowerCase().includes('revenue'))?.current_value || 575000
+  const completedTasks = tasks.filter(t => t.status === 'completed').length
+  const totalTasks = tasks.length || 1
+
   const revenueData = [
     { month: 'Jan', revenue: 50000, target: 100000 },
     { month: 'Feb', revenue: 75000, target: 100000 },
@@ -21,17 +52,13 @@ const Dashboard = () => {
     { month: 'Jun', revenue: 180000, target: 100000 },
   ]
 
+  const onTrack = kpis.filter(k => k.trend === 'up').length || 3
+  const atRisk = kpis.filter(k => k.trend === 'stable').length || 2
+  const critical = kpis.filter(k => k.trend === 'down').length || 1
   const kpiData = [
-    { name: 'On Track', value: 65, color: '#22c55e' },
-    { name: 'At Risk', value: 25, color: '#f59e0b' },
-    { name: 'Critical', value: 10, color: '#ef4444' },
-  ]
-
-  const recentTasks = [
-    { id: 1, title: 'Review Q1 Marketing Campaign', status: 'completed', priority: 'high', dueDate: '2025-01-15' },
-    { id: 2, title: 'Setup Digital CMO Agent', status: 'in-progress', priority: 'high', dueDate: '2025-01-20' },
-    { id: 3, title: 'Configure KPI Dashboard', status: 'pending', priority: 'medium', dueDate: '2025-01-25' },
-    { id: 4, title: 'Train Sales Team on BOS', status: 'pending', priority: 'low', dueDate: '2025-02-01' },
+    { name: 'On Track', value: onTrack, color: '#22c55e' },
+    { name: 'At Risk', value: atRisk, color: '#f59e0b' },
+    { name: 'Critical', value: critical, color: '#ef4444' },
   ]
 
   const getStatusColor = (status: string) => {
@@ -54,73 +81,56 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Command Center Dashboard</h1>
         <p className="text-gray-600">Monitor your digital empire's performance in real-time</p>
+        {loading && <p className="text-sm text-primary-600 mt-1">Loading live data...</p>}
       </div>
 
-      {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="card">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <DollarSign className="h-8 w-8 text-success-600" />
-            </div>
+            <DollarSign className="h-8 w-8 text-success-600 flex-shrink-0" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">AED 575,000</p>
-              <p className="text-sm text-success-600 flex items-center">
-                <TrendingUp className="h-4 w-4 mr-1" />
-                +15% from last month
-              </p>
+              <p className="text-2xl font-bold text-gray-900">AED {totalRevenue.toLocaleString()}</p>
+              <p className="text-sm text-success-600 flex items-center"><TrendingUp className="h-4 w-4 mr-1" />+15% from last month</p>
             </div>
           </div>
         </div>
-
         <div className="card">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <Target className="h-8 w-8 text-primary-600" />
-            </div>
+            <Target className="h-8 w-8 text-primary-600 flex-shrink-0" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Target Progress</p>
-              <p className="text-2xl font-bold text-gray-900">57.5%</p>
-              <p className="text-sm text-primary-600">5.5 months remaining</p>
+              <p className="text-2xl font-bold text-gray-900">{((totalRevenue / 1000000) * 100).toFixed(1)}%</p>
+              <p className="text-sm text-primary-600">Target: 1M AED</p>
             </div>
           </div>
         </div>
-
         <div className="card">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <Users className="h-8 w-8 text-secondary-600" />
-            </div>
+            <Users className="h-8 w-8 text-secondary-600 flex-shrink-0" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Active Agents</p>
-              <p className="text-2xl font-bold text-gray-900">6/6</p>
-              <p className="text-sm text-success-600">All systems operational</p>
+              <p className="text-2xl font-bold text-gray-900">{activeAgents}/{totalAgents}</p>
+              <p className="text-sm text-success-600">{activeAgents === totalAgents ? 'All systems operational' : 'Some agents inactive'}</p>
             </div>
           </div>
         </div>
-
         <div className="card">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <CheckCircle className="h-8 w-8 text-success-600" />
-            </div>
+            <CheckCircle className="h-8 w-8 text-success-600 flex-shrink-0" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Tasks Completed</p>
-              <p className="text-2xl font-bold text-gray-900">89%</p>
+              <p className="text-2xl font-bold text-gray-900">{Math.round((completedTasks / totalTasks) * 100)}%</p>
               <p className="text-sm text-success-600">On track for deadline</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Chart */}
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue vs Target</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -134,24 +144,12 @@ const Dashboard = () => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-
-        {/* KPI Status */}
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">KPI Status Overview</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie
-                data={kpiData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {kpiData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
+              <Pie data={kpiData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
+                {kpiData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
               </Pie>
               <Tooltip />
             </PieChart>
@@ -163,58 +161,48 @@ const Dashboard = () => {
                   <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }} />
                   <span className="text-sm text-gray-600">{item.name}</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900">{item.value}%</span>
+                <span className="text-sm font-medium text-gray-900">{item.value}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Recent Tasks */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Recent Tasks</h3>
-          <button className="btn btn-primary">View All</button>
-        </div>
-        <div className="space-y-3">
-          {recentTasks.map((task) => (
-            <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
-                  {task.status.replace('-', ' ')}
+      {tasks.length > 0 && (
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Recent Tasks</h3>
+          </div>
+          <div className="space-y-3">
+            {tasks.map((task) => (
+              <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
+                    {task.status.replace('-', ' ')}
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">{task.title}</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900">{task.title}</span>
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                  {task.priority}
-                </span>
-                <div className="flex items-center text-xs text-gray-500">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  {task.dueDate}
+                <div className="flex items-center space-x-4">
+                  <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>{task.priority}</span>
+                  {task.due_date && (
+                    <div className="flex items-center text-xs text-gray-500">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      {new Date(task.due_date).toLocaleDateString()}
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Quick Actions */}
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="btn btn-primary w-full">
-            <Users className="h-4 w-4 mr-2" />
-            Deploy New Agent
-          </button>
-          <button className="btn btn-secondary w-full">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Generate Report
-          </button>
-          <button className="btn btn-success w-full">
-            <CheckSquare className="h-4 w-4 mr-2" />
-            Create Task
-          </button>
+          <button className="btn btn-primary w-full"><Users className="h-4 w-4 mr-2" />Deploy New Agent</button>
+          <button className="btn btn-secondary w-full"><BarChart3 className="h-4 w-4 mr-2" />Generate Report</button>
+          <button className="btn btn-success w-full"><CheckSquare className="h-4 w-4 mr-2" />Create Task</button>
         </div>
       </div>
     </div>

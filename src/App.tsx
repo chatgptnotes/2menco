@@ -11,6 +11,7 @@ import Tasks from './pages/Tasks'
 import Documents from './pages/Documents'
 import Settings from './pages/Settings'
 import Help from './pages/Help'
+import Signup from './pages/Signup'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -43,6 +44,7 @@ const AppRoutes = () => {
       
       {/* Login Page */}
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
       
       {/* Protected Dashboard System */}
       <Route path="/dashboard" element={
