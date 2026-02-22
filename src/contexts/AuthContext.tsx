@@ -51,6 +51,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // BYPASS AUTH — auto-login as admin until proper auth is configured
+    const BYPASS_AUTH = true
+    if (BYPASS_AUTH) {
+      setUser({
+        id: 'admin-bypass',
+        name: 'Dr. BK Murali',
+        email: 'admin@2men.co',
+        role: 'owner',
+        permissions: ['read', 'write', 'admin', 'delete'],
+      })
+      setIsLoading(false)
+      return
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) setUser(mapSupabaseUser(session.user))
       setIsLoading(false)
