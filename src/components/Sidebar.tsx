@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, BarChart3, CheckSquare, FileText, Settings,
   Target, TrendingUp, HelpCircle, LogOut, Zap, UserCircle, Menu, X, ChevronRight,
-  Mail, Briefcase
+  Mail, Briefcase, Wallet, ClipboardList, Receipt
 } from 'lucide-react'
 
 const navigation = [
@@ -13,6 +13,9 @@ const navigation = [
   { name: 'Agents', href: '/dashboard/agents', icon: Users },
   { name: 'Emails', href: '/dashboard/emails', icon: Mail },
   { name: 'CRM', href: '/dashboard/crm', icon: Briefcase },
+  { name: '💰 CFO Dashboard', href: '/dashboard/cfo', icon: Wallet },
+  { name: '📋 Claims', href: '/dashboard/claims', icon: ClipboardList },
+  { name: '🧾 Invoices', href: '/dashboard/invoices', icon: Receipt },
   { name: 'KPIs', href: '/dashboard/kpis', icon: BarChart3 },
   { name: 'Leads', href: '/dashboard/leads', icon: UserCircle },
   { name: 'Analytics', href: '/dashboard/analytics', icon: TrendingUp },

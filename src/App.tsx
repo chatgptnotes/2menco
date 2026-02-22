@@ -15,6 +15,9 @@ import Tasks from './pages/Tasks'
 import Documents from './pages/Documents'
 import Settings from './pages/Settings'
 import Help from './pages/Help'
+import CFO from './pages/CFO'
+import Claims from './pages/Claims'
+import Invoices from './pages/Invoices'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth()
@@ -45,6 +48,9 @@ const AppRoutes = () => (
       <Route path="tasks" element={<Tasks />} />
       <Route path="documents" element={<Documents />} />
       <Route path="settings" element={<Settings />} />
+      <Route path="cfo" element={<CFO />} />
+      <Route path="claims" element={<Claims />} />
+      <Route path="invoices" element={<Invoices />} />
       <Route path="help" element={<Help />} />
     </Route>
     <Route path="*" element={<Navigate to="/" replace />} />
