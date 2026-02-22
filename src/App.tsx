@@ -12,6 +12,8 @@ import KPIs from './pages/KPIs'
 import Leads from './pages/Leads'
 import Analytics from './pages/Analytics'
 import Tasks from './pages/Tasks'
+import Emails from './pages/Emails'
+import CRM from './pages/CRM'
 import Documents from './pages/Documents'
 import Settings from './pages/Settings'
 import Help from './pages/Help'
@@ -42,6 +44,8 @@ const AppRoutes = () => (
       <Route path="kpis" element={<KPIs />} />
       <Route path="leads" element={<Leads />} />
       <Route path="analytics" element={<Analytics />} />
+      <Route path="emails" element={<Emails />} />
+      <Route path="crm" element={<CRM />} />
       <Route path="tasks" element={<Tasks />} />
       <Route path="documents" element={<Documents />} />
       <Route path="settings" element={<Settings />} />
