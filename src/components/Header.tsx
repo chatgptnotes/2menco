@@ -1,58 +1,42 @@
 import { useAuth } from '../contexts/AuthContext'
-import { Bell, Search, User, Settings as SettingsIcon } from 'lucide-react'
+import { Bell, Search, Command } from 'lucide-react'
 
 const Header = () => {
   const { user } = useAuth()
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-      <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-        <div className="relative flex flex-1 items-center">
-          <Search className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400 ml-3" />
+    <header className="sticky top-0 z-40 h-14 flex items-center gap-4 border-b border-white/[0.06] bg-gray-950/80 backdrop-blur-xl px-6">
+      {/* Search */}
+      <div className="flex-1 flex items-center">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           <input
             type="text"
-            placeholder="Search anything in your BOS..."
-            className="block h-full w-full border-0 py-0 pl-10 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+            placeholder="Search..."
+            className="w-full h-9 pl-10 pr-12 bg-white/[0.04] border border-white/[0.06] rounded-lg text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500/30 focus:border-blue-500/30 transition-all"
           />
+          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-0.5 text-[10px] text-gray-600 bg-white/5 rounded px-1.5 py-0.5">
+            <Command className="h-3 w-3" />K
+          </kbd>
         </div>
-        
-        <div className="flex items-center gap-x-4 lg:gap-x-6">
-          <button
-            type="button"
-            className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
-          >
-            <span className="sr-only">View notifications</span>
-            <Bell className="h-6 w-6" />
-          </button>
+      </div>
 
-          <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" />
+      {/* Right */}
+      <div className="flex items-center gap-3">
+        <button className="relative p-2 text-gray-500 hover:text-gray-300 transition-colors rounded-lg hover:bg-white/5">
+          <Bell className="h-4 w-4" />
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-blue-500 rounded-full" />
+        </button>
 
-          <div className="flex items-center gap-x-4 lg:gap-x-6">
-            <button
-              type="button"
-              className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
-            >
-              <span className="sr-only">Settings</span>
-              <SettingsIcon className="h-6 w-6" />
-            </button>
+        <div className="h-6 w-px bg-white/[0.06]" />
 
-            <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" />
-
-            <div className="flex items-center gap-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.name || 'BT (Biji Tharakan Thomas)'}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {user?.role || 'Owner & CEO'}
-                </p>
-              </div>
-              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-primary-600 to-secondary-600 flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {user?.name?.charAt(0) || 'B'}
-                </span>
-              </div>
-            </div>
+        <div className="flex items-center gap-2">
+          <div className="text-right hidden sm:block">
+            <p className="text-xs font-medium text-gray-300">{user?.name || 'BT'}</p>
+            <p className="text-[10px] text-gray-600">{user?.role || 'Owner'}</p>
+          </div>
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
+            {user?.name?.charAt(0) || 'B'}
           </div>
         </div>
       </div>

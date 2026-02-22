@@ -1,361 +1,248 @@
 import { useNavigate } from 'react-router-dom'
-import { 
-  Rocket, 
-  Target, 
-  Users, 
-  Clock, 
-  CheckCircle, 
-  Shield, 
-  BarChart3, 
-  Settings,
-  ArrowRight,
-  Play
+import { motion } from 'framer-motion'
+import {
+  Zap, ArrowRight, Users, DollarSign, BarChart3, CheckSquare, Settings, FileText,
+  Check, Star, Shield, Globe, Clock, Bot
 } from 'lucide-react'
+
+const agents = [
+  { type: 'CMO', title: 'Digital CMO', desc: 'AI-powered marketing & lead generation', icon: Users, color: 'from-blue-500 to-cyan-500', glow: 'shadow-blue-500/20' },
+  { type: 'CRO', title: 'Digital CRO', desc: 'Sales optimization & revenue growth', icon: DollarSign, color: 'from-emerald-500 to-green-500', glow: 'shadow-emerald-500/20' },
+  { type: 'CFO', title: 'Digital CFO', desc: 'Financial management & forecasting', icon: BarChart3, color: 'from-violet-500 to-purple-500', glow: 'shadow-violet-500/20' },
+  { type: 'COO', title: 'Digital COO', desc: 'Operations & process automation', icon: CheckSquare, color: 'from-orange-500 to-amber-500', glow: 'shadow-orange-500/20' },
+  { type: 'CTO', title: 'Digital CTO', desc: 'Technology strategy & architecture', icon: Settings, color: 'from-indigo-500 to-blue-500', glow: 'shadow-indigo-500/20' },
+  { type: 'CXO', title: 'Digital CXO', desc: 'Customer experience & satisfaction', icon: FileText, color: 'from-pink-500 to-rose-500', glow: 'shadow-pink-500/20' },
+]
+
+const pricing = [
+  {
+    name: 'Starter', price: 49, period: '/mo', desc: 'Perfect for solo founders',
+    features: ['2 AI Agents', '5 KPI Tracking', 'Basic Analytics', 'Email Support', '100 Leads'],
+    cta: 'Start Free Trial', highlight: false,
+  },
+  {
+    name: 'Pro', price: 149, period: '/mo', desc: 'For growing businesses',
+    features: ['All 6 AI Agents', 'Unlimited KPIs', 'Advanced Analytics', 'Priority Support', 'Unlimited Leads', 'Custom Dashboards', 'API Access'],
+    cta: 'Get Started', highlight: true,
+  },
+  {
+    name: 'Enterprise', price: 499, period: '/mo', desc: 'For scaling organizations',
+    features: ['Everything in Pro', 'Custom AI Training', 'Dedicated Account Manager', 'SLA Guarantee', 'White Label', 'Multi-team Access', 'On-premise Option'],
+    cta: 'Contact Sales', highlight: false,
+  },
+]
 
 const Landing = () => {
   const navigate = useNavigate()
 
-  const handleLaunchDashboard = () => {
-    navigate('/dashboard')
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
-      {/* Header */}
-      <header className="text-center py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="mx-auto h-24 w-24 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-full flex items-center justify-center mb-8">
-            <Rocket className="h-12 w-12 text-white" />
+    <div className="min-h-screen bg-gray-950 text-white">
+      {/* Nav */}
+      <nav className="fixed top-0 w-full z-50 bg-gray-950/80 backdrop-blur-xl border-b border-white/[0.04]">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-violet-600 rounded-lg flex items-center justify-center">
+              <Zap className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-lg tracking-tight">BETTROI</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            🚀 BETTROI BOS
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-600 mb-8">
-            Digital Business Operating System
-          </p>
-          
-          {/* Mission Statement */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-gray-200 mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              🎯 Your Mission: 1 Million in 9 Months
-            </h2>
-            <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-              Two humans + Digital robot team = Digital Empire! Complete system to automate your business 
-              and scale to 1 million AED in 9 months.
-            </p>
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={handleLaunchDashboard}
-              className="btn btn-primary text-lg px-8 py-4 flex items-center justify-center space-x-2 hover:scale-105 transition-transform"
-            >
-              <Play className="h-6 w-6" />
-              <span>Launch Dashboard</span>
-              <ArrowRight className="h-6 w-6" />
-            </button>
-            <a
-              href="https://github.com/chatgptnotes/2menco.git"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-secondary text-lg px-8 py-4 border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white transition-colors"
-            >
-              📚 View Complete System
-            </a>
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate('/login')} className="text-sm text-gray-400 hover:text-white transition-colors">Sign In</button>
+            <button onClick={() => navigate('/signup')} className="btn btn-primary text-sm">Get Started</button>
           </div>
         </div>
-      </header>
+      </nav>
 
-      {/* Stats Grid */}
-      <section className="py-16 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="card text-center hover:shadow-lg transition-shadow">
-              <div className="text-4xl font-bold text-primary-600 mb-2">1M</div>
-              <div className="text-gray-600 font-medium">Target Revenue (AED)</div>
-            </div>
-            <div className="card text-center hover:shadow-lg transition-shadow">
-              <div className="text-4xl font-bold text-secondary-600 mb-2">9</div>
-              <div className="text-gray-600 font-medium">Months Timeline</div>
-            </div>
-            <div className="card text-center hover:shadow-lg transition-shadow">
-              <div className="text-4xl font-bold text-success-600 mb-2">2</div>
-              <div className="text-gray-600 font-medium">Human Leaders</div>
-            </div>
-            <div className="card text-center hover:shadow-lg transition-shadow">
-              <div className="text-4xl font-bold text-warning-600 mb-2">24/7</div>
-              <div className="text-gray-600 font-medium">Robot Team</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="py-16 px-4">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
-            Complete Digital Empire Building System
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Digital Robot Team */}
-            <div className="card hover:shadow-lg transition-shadow">
-              <div className="text-center mb-4">
-                <Users className="h-16 w-16 text-primary-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-3">🤖 Digital Robot Team</h3>
-              </div>
-              <p className="text-gray-600 mb-4">Complete automation with intelligent agents:</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Digital CMO - Marketing & Lead Generation</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Digital CRO - Sales & Revenue Optimization</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Digital CFO - Financial Management</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Digital COO - Operations & Execution</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Digital CTO - Technology & Architecture</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Digital CXO - Customer Experience</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* KPI-First System */}
-            <div className="card hover:shadow-lg transition-shadow">
-              <div className="text-center mb-4">
-                <BarChart3 className="h-16 w-16 text-secondary-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-3">📊 KPI-First System</h3>
-              </div>
-              <p className="text-gray-600 mb-4">Every action drives measurable results:</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Pipeline Growth & Lead Generation</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Win Rate & Conversion Optimization</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>MRR/ARR Revenue Tracking</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Customer Satisfaction (NPS/CSAT)</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Cash Flow & Runway Management</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Real-time Performance Monitoring</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Enterprise Security */}
-            <div className="card hover:shadow-lg transition-shadow">
-              <div className="text-center mb-4">
-                <Shield className="h-16 w-16 text-success-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-3">🔐 Enterprise Security</h3>
-              </div>
-              <p className="text-gray-600 mb-4">Built with security and compliance:</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>UAE PDPL Compliance</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>India DPDP Compliance</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>EU GDPR Compliance</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Role-Based Access Control</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Data Residency Management</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>24/7 Security Monitoring</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Command Center Dashboard */}
-            <div className="card hover:shadow-lg transition-shadow">
-              <div className="text-center mb-4">
-                <Settings className="h-16 w-16 text-warning-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-3">🎛️ Command Center Dashboard</h3>
-              </div>
-              <p className="text-gray-600 mb-4">One screen to control everything:</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Real-time KPI Monitoring</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Agent Performance Tracking</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Incident & Alert Management</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Financial Dashboard</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Task Management System</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Automated Reporting</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Complete Documentation */}
-            <div className="card hover:shadow-lg transition-shadow">
-              <div className="text-center mb-4">
-                <Target className="h-16 w-16 text-info-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-3">📋 Complete Documentation</h3>
-              </div>
-              <p className="text-gray-600 mb-4">Everything you need to succeed:</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>9-Month Million Dollar Plan</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Standard Operating Procedures</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Agent Configuration Templates</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Task Contract System</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Quick Start Guide</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Acronyms & Glossary</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Scalable Architecture */}
-            <div className="card hover:shadow-lg transition-shadow">
-              <div className="text-center mb-4">
-                <Rocket className="h-16 w-16 text-purple-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-3">🚀 Scalable Architecture</h3>
-              </div>
-              <p className="text-gray-600 mb-4">Grows with your business:</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Modular Agent System</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Cloud-Native Infrastructure</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Auto-Scaling Capabilities</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Multi-Region Deployment</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Continuous Integration/Deployment</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-success-600 flex-shrink-0" />
-                  <span>Performance Optimization</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-primary-600 to-secondary-600">
+      {/* Hero */}
+      <section className="pt-32 pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Build Your Digital Empire?
-          </h2>
-          <p className="text-xl text-white/90 mb-8 leading-relaxed">
-            Start your journey to 1 million in 9 months with the complete BETTROI BOS system. 
-            Launch the dashboard now and begin building your digital empire!
-          </p>
-          <button
-            onClick={handleLaunchDashboard}
-            className="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-4 flex items-center justify-center space-x-2 mx-auto hover:scale-105 transition-transform"
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
           >
-            <Play className="h-6 w-6" />
-            <span>Launch Dashboard Now</span>
-            <ArrowRight className="h-6 w-6" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium mb-8">
+              <Bot className="h-3 w-3" /> Powered by 6 AI Agents
+            </div>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] mb-6">
+              Your AI-Powered<br />
+              <span className="text-gradient">Business Operating</span><br />
+              System
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+              Deploy 6 autonomous AI agents to run your business. From marketing to finance, automate everything and scale to 1M AED in 9 months.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="btn bg-white text-gray-900 hover:bg-gray-100 text-base px-8 py-3 font-semibold"
+              >
+                Launch Dashboard <ArrowRight className="h-5 w-5 ml-2" />
+              </button>
+              <button
+                onClick={() => navigate('/signup')}
+                className="btn btn-secondary text-base px-8 py-3"
+              >
+                Start Free Trial
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-20"
+          >
+            {[
+              { value: '6', label: 'AI Agents' },
+              { value: '24/7', label: 'Autonomous' },
+              { value: '1M', label: 'AED Target' },
+              { value: '9mo', label: 'Timeline' },
+            ].map(s => (
+              <div key={s.label}>
+                <p className="text-3xl sm:text-4xl font-black text-gradient">{s.value}</p>
+                <p className="text-sm text-gray-500 mt-1">{s.label}</p>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Agents Showcase */}
+      <section className="py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Your Digital Executive Team</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">Six specialized AI agents working 24/7 to grow your business autonomously</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {agents.map((agent, i) => (
+              <motion.div
+                key={agent.type}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="card-hover group cursor-pointer"
+              >
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-white mb-4 shadow-lg ${agent.glow}`}>
+                  <agent.icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-base font-semibold text-white mb-1 group-hover:text-blue-400 transition-colors">{agent.title}</h3>
+                <p className="text-sm text-gray-500">{agent.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-24 px-6 bg-white/[0.01]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Enterprise-Grade Platform</h2>
+            <p className="text-gray-500">Everything you need to run a digital-first business</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { icon: BarChart3, title: 'Real-time KPIs', desc: 'Track every metric that matters' },
+              { icon: Shield, title: 'Enterprise Security', desc: 'GDPR, PDPL compliant' },
+              { icon: Globe, title: 'Multi-region', desc: 'Deploy anywhere globally' },
+              { icon: Clock, title: '24/7 Automation', desc: 'Never stops working' },
+            ].map((f, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className="card text-center">
+                <f.icon className="h-8 w-8 text-blue-400 mx-auto mb-3" />
+                <h3 className="text-sm font-semibold text-white mb-1">{f.title}</h3>
+                <p className="text-xs text-gray-500">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Simple Pricing</h2>
+            <p className="text-gray-500">Start free, scale as you grow</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {pricing.map((plan, i) => (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className={`rounded-2xl border p-6 ${
+                  plan.highlight
+                    ? 'border-blue-500/30 bg-blue-500/5 shadow-lg shadow-blue-500/10'
+                    : 'border-white/[0.06] bg-white/[0.02]'
+                }`}
+              >
+                {plan.highlight && (
+                  <div className="flex items-center gap-1 text-xs font-medium text-blue-400 mb-4">
+                    <Star className="h-3 w-3" /> Most Popular
+                  </div>
+                )}
+                <h3 className="text-lg font-bold text-white">{plan.name}</h3>
+                <p className="text-xs text-gray-500 mb-4">{plan.desc}</p>
+                <div className="flex items-baseline gap-1 mb-6">
+                  <span className="text-4xl font-black text-white">${plan.price}</span>
+                  <span className="text-gray-500 text-sm">{plan.period}</span>
+                </div>
+                <ul className="space-y-2 mb-6">
+                  {plan.features.map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-400">
+                      <Check className="h-4 w-4 text-emerald-400 flex-shrink-0" />{f}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                    plan.highlight ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                  }`}
+                >
+                  {plan.cta}
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-24 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to Build Your Digital Empire?</h2>
+          <p className="text-gray-500 mb-8 text-lg">Start automating your business with AI agents today</p>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="btn bg-white text-gray-900 hover:bg-gray-100 text-base px-8 py-3 font-semibold"
+          >
+            Launch Dashboard <ArrowRight className="h-5 w-5 ml-2" />
           </button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 text-center text-gray-600">
-        <div className="max-w-4xl mx-auto">
-          <p className="mb-4">© 2025 BETTROI BOS - Digital Business Operating System</p>
-          <p className="mb-4">Owner: BT (Biji Tharakan Thomas) | Version: 1.0 | Timezone: Asia/Dubai</p>
-          <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <a 
-              href="https://github.com/chatgptnotes/2menco.git" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary-600 hover:text-primary-700 underline"
-            >
-              GitHub Repository
-            </a>
-            <a 
-              href="https://github.com/chatgptnotes/2menco/blob/main/docs/million-dollar-plan.md" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary-600 hover:text-primary-700 underline"
-            >
-              Million Dollar Plan
-            </a>
+      <footer className="border-t border-white/[0.04] py-8 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Zap className="h-4 w-4 text-blue-400" />
+            <span className="text-sm text-gray-500">© 2025 BETTROI BOS</span>
           </div>
+          <p className="text-xs text-gray-600">Digital Business Operating System · 2men.co</p>
         </div>
       </footer>
     </div>

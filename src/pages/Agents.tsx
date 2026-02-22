@@ -1,37 +1,37 @@
 import { useState, useEffect } from 'react'
-import { 
-  Pause, Activity, CheckCircle, AlertCircle, Clock,
-  TrendingUp, Users, DollarSign, BarChart3, CheckSquare, FileText,
-  Settings as SettingsIcon
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import {
+  Users, DollarSign, BarChart3, CheckSquare, FileText, Settings,
+  ArrowRight, CheckCircle, Pause, Zap, AlertCircle
 } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
+import { apiAgents, type Agent } from '../lib/api'
+import PageTransition from '../components/PageTransition'
+import { CardSkeleton } from '../components/LoadingSkeleton'
 
-interface Agent {
-  id: string
-  name: string
-  type: string
-  status: string
-  config: Record<string, unknown>
-  metrics: Record<string, unknown>
+const iconMap: Record<string, typeof Users> = {
+  cmo: Users, cro: DollarSign, cfo: BarChart3, coo: CheckSquare, cto: Settings, cxo: FileText,
 }
-
-const iconMap: Record<string, React.ReactNode> = {
-  cmo: <Users className="h-6 w-6" />,
-  cro: <DollarSign className="h-6 w-6" />,
-  cfo: <BarChart3 className="h-6 w-6" />,
-  coo: <CheckSquare className="h-6 w-6" />,
-  cto: <SettingsIcon className="h-6 w-6" />,
-  cxo: <FileText className="h-6 w-6" />,
-}
-
 const colorMap: Record<string, string> = {
-  cmo: 'bg-blue-500', cro: 'bg-green-500', cfo: 'bg-purple-500',
-  coo: 'bg-orange-500', cto: 'bg-indigo-500', cxo: 'bg-pink-500',
+  cmo: 'from-blue-500 to-cyan-500', cro: 'from-emerald-500 to-green-500',
+  cfo: 'from-violet-500 to-purple-500', coo: 'from-orange-500 to-amber-500',
+  cto: 'from-indigo-500 to-blue-500', cxo: 'from-pink-500 to-rose-500',
 }
 
-const roleMap: Record<string, string> = {
-  cmo: 'Chief Marketing Officer', cro: 'Chief Revenue Officer', cfo: 'Chief Financial Officer',
-  coo: 'Chief Operations Officer', cto: 'Chief Technology Officer', cxo: 'Chief Experience Officer',
+const statusIcon = (s: string) => {
+  switch (s) {
+    case 'active': case 'working': return <Zap className="h-3 w-3" />
+    case 'error': return <AlertCircle className="h-3 w-3" />
+    case 'idle': return <Pause className="h-3 w-3" />
+    default: return <CheckCircle className="h-3 w-3" />
+  }
+}
+const statusStyle = (s: string) => {
+  switch (s) {
+    case 'active': case 'working': return 'bg-emerald-500/10 text-emerald-400'
+    case 'error': return 'bg-red-500/10 text-red-400'
+    default: return 'bg-amber-500/10 text-amber-400'
+  }
 }
 
 const Agents = () => {
@@ -39,107 +39,98 @@ const Agents = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.from('agents').select('*').then(({ data }) => {
-      if (data && data.length > 0) setAgents(data)
-      setLoading(false)
-    })
+    apiAgents.list()
+      .then(setAgents)
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'text-success-600 bg-success-50'
-      case 'inactive': return 'text-gray-600 bg-gray-50'
-      case 'error': return 'text-danger-600 bg-danger-50'
-      case 'maintenance': return 'text-warning-600 bg-warning-50'
-      default: return 'text-gray-600 bg-gray-50'
-    }
-  }
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active': return <CheckCircle className="h-4 w-4" />
-      case 'error': return <AlertCircle className="h-4 w-4" />
-      case 'maintenance': return <Clock className="h-4 w-4" />
-      default: return <Pause className="h-4 w-4" />
-    }
-  }
-
-  const performance = (a: Agent) => (a.metrics as { performance?: number })?.performance ?? 85
-  const uptime = (a: Agent) => (a.metrics as { uptime?: number })?.uptime ?? 99
-
-  const getPerformanceColor = (p: number) => p >= 90 ? 'text-success-600' : p >= 80 ? 'text-warning-600' : 'text-danger-600'
-
-  if (loading) return <div className="text-center py-12"><p className="text-gray-500">Loading agents...</p></div>
-
-  if (agents.length === 0) return (
-    <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold text-gray-900">Digital Agents</h1>
-      <p className="text-gray-600">No agents found. Run the SQL migration and seed script to populate data.</p></div>
+  if (loading) return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[1,2,3,4,5,6].map(i => <CardSkeleton key={i} />)}
     </div>
   )
 
+  const activeCount = agents.filter(a => a.status === 'active' || a.status === 'working').length
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-gray-900">Digital Agents</h1>
-        <p className="text-gray-600">Manage your AI-powered business team</p></div>
-        <button className="btn btn-primary"><Users className="h-4 w-4 mr-2" />Deploy New Agent</button>
-      </div>
+    <PageTransition>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Digital Agents</h1>
+          <p className="text-sm text-gray-500 mt-1">Your AI-powered executive team</p>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {agents.map((agent) => {
-          const perf = performance(agent)
-          return (
-            <div key={agent.id} className="card hover:shadow-lg transition-shadow">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white ${colorMap[agent.type] || 'bg-gray-500'}`}>
-                    {iconMap[agent.type] || <Users className="h-6 w-6" />}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{agent.name}</h3>
-                    <p className="text-sm text-gray-500">{roleMap[agent.type] || agent.type.toUpperCase()}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(agent.status)}`}>
-                  {getStatusIcon(agent.status)}<span>{agent.status}</span>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">{(agent.config as { description?: string })?.description || `AI-powered ${roleMap[agent.type] || agent.type}`}</p>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Performance</span>
-                  <span className={`text-sm font-medium ${getPerformanceColor(perf)}`}>{perf}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full ${getPerformanceColor(perf).replace('text-', 'bg-')}`} style={{ width: `${perf}%` }} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Uptime</span>
-                  <span className="text-sm font-medium text-gray-900">{uptime(agent)}%</span>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-gray-200 flex space-x-2">
-                <button className="btn btn-secondary flex-1 text-xs"><Activity className="h-3 w-3 mr-1" />Monitor</button>
-                <button className="btn btn-primary flex-1 text-xs"><TrendingUp className="h-3 w-3 mr-1" />Optimize</button>
-              </div>
+        {/* Summary */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { label: 'Total Agents', value: agents.length, color: 'text-blue-400' },
+            { label: 'Active', value: activeCount, color: 'text-emerald-400' },
+            { label: 'Idle', value: agents.length - activeCount, color: 'text-amber-400' },
+            { label: 'Tasks Done', value: agents.reduce((s, a) => s + (a.tasks_completed || 0), 0), color: 'text-violet-400' },
+          ].map(s => (
+            <div key={s.label} className="card text-center">
+              <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+              <p className="text-xs text-gray-500 mt-1">{s.label}</p>
             </div>
-          )
-        })}
-      </div>
+          ))}
+        </div>
 
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Agent Performance Summary</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="text-center"><div className="text-2xl font-bold text-success-600">{agents.filter(a => a.status === 'active').length}</div><div className="text-sm text-gray-500">Active</div></div>
-          <div className="text-center"><div className="text-2xl font-bold text-warning-600">{agents.filter(a => a.status === 'maintenance').length}</div><div className="text-sm text-gray-500">Maintenance</div></div>
-          <div className="text-center"><div className="text-2xl font-bold text-danger-600">{agents.filter(a => a.status === 'error').length}</div><div className="text-sm text-gray-500">Needs Attention</div></div>
-          <div className="text-center"><div className="text-2xl font-bold text-primary-600">{Math.round(agents.reduce((s, a) => s + performance(a), 0) / agents.length)}%</div><div className="text-sm text-gray-500">Avg Performance</div></div>
+        {/* Agent Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {agents.map((agent, i) => {
+            const Icon = iconMap[agent.role] || Users
+            return (
+              <motion.div
+                key={agent.role}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <Link
+                  to={`/dashboard/agents/${agent.role}`}
+                  className="card-hover block group"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${colorMap[agent.role] || 'from-gray-500 to-gray-400'} flex items-center justify-center text-white shadow-lg`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors">{agent.name}</h3>
+                        <p className="text-xs text-gray-500">{agent.title}</p>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-gray-700 group-hover:text-gray-400 transition-colors" />
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium flex items-center gap-1 ${statusStyle(agent.status)}`}>
+                      {statusIcon(agent.status)}
+                      {agent.status}
+                    </span>
+                    {agent.tasks_completed > 0 && (
+                      <span className="text-[11px] text-gray-600">{agent.tasks_completed} tasks</span>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-gray-500 line-clamp-2">{agent.description}</p>
+
+                  <div className="flex flex-wrap gap-1 mt-3">
+                    {agent.capabilities.slice(0, 3).map(c => (
+                      <span key={c} className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gray-500">{c.replace(/_/g, ' ')}</span>
+                    ))}
+                    {agent.capabilities.length > 3 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gray-500">+{agent.capabilities.length - 3}</span>
+                    )}
+                  </div>
+                </Link>
+              </motion.div>
+            )
+          })}
         </div>
       </div>
-    </div>
+    </PageTransition>
   )
 }
 
