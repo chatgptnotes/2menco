@@ -5,7 +5,7 @@ import {
   Users, DollarSign, BarChart3, CheckSquare, FileText, Settings,
   ArrowRight, CheckCircle, Pause, Zap, AlertCircle
 } from 'lucide-react'
-import { apiAgents, type Agent } from '../lib/api'
+import { supabase } from '../lib/supabaseClient'
 import PageTransition from '../components/PageTransition'
 import { CardSkeleton } from '../components/LoadingSkeleton'
 
