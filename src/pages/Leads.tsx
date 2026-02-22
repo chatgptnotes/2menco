@@ -41,7 +41,15 @@ const Leads = () => {
 
   useEffect(() => {
     supabase.from('leads').select('*').order('created_at', { ascending: false }).then(({ data }) => {
-      if (data) setLeads(data)
+      if (data && data.length > 0) setLeads(data)
+      else setLeads([
+        { id: '1', name: 'Dubai Media City', email: 'info@dubaimedia.ae', phone: '+971-555-1234', company: 'Dubai Media City', source: 'referral', status: 'proposal', score: 85, notes: 'Jotform API POC - 4 approval levels', created_at: '2026-02-20T10:00:00Z' },
+        { id: '2', name: 'SABI MEP', email: 'estimation@sabi.ae', phone: '+971-555-5678', company: 'SABI Group', source: 'direct', status: 'qualified', score: 90, notes: 'AI MEP estimation agent - 50% margin', created_at: '2026-02-19T09:00:00Z' },
+        { id: '3', name: 'Angelina BNI', email: 'contact@angelina.ae', phone: '+971-555-9012', company: 'Angelina Interiors', source: 'bni', status: 'new', score: 70, notes: 'Interior design AI BOQ extraction', created_at: '2026-02-21T14:00:00Z' },
+        { id: '4', name: 'Govt Entity RFP', email: 'procurement@gov.ae', phone: '+971-555-3456', company: 'Dubai Govt Entity', source: 'rfp', status: 'proposal', score: 80, notes: 'Website + 2 mobile apps, ₹5.5L', created_at: '2026-02-18T11:00:00Z' },
+        { id: '5', name: 'HealTra', email: 'dr.aldaly@healtra.com', phone: '+966-555-7890', company: 'HealTra Health', source: 'direct', status: 'contacted', score: 75, notes: 'Doctors referral network, Saudi-only V1', created_at: '2026-02-17T08:00:00Z' },
+        { id: '6', name: 'Neurosense', email: 'info@neurosense.ai', phone: '+971-555-2345', company: 'Neurosense Labs', source: 'referral', status: 'won', score: 95, notes: 'Final testing + demo + handover done', created_at: '2026-02-15T16:00:00Z' },
+      ])
       setLoading(false)
     })
   }, [])

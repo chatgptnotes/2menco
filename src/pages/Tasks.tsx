@@ -19,7 +19,15 @@ const Tasks = () => {
 
   useEffect(() => {
     supabase.from('agent_tasks').select('*').order('created_at', { ascending: false }).then(({ data }) => {
-      if (data) setTasks(data)
+      if (data && data.length > 0) setTasks(data)
+      else setTasks([
+        { id: '1', title: 'Wire ZeroRiskAgent CFO module', description: 'Connect Adamrit Supabase to 2men.co CFO dashboard', status: 'completed', priority: 'high', due_date: '2026-02-22', created_at: '2026-02-22T08:00:00Z', agent_id: 'cfo' },
+        { id: '2', title: 'NABH evidence deadline follow-up', description: 'Send reminders to all 15 chapter owners', status: 'completed', priority: 'critical', due_date: '2026-02-22', created_at: '2026-02-22T08:30:00Z', agent_id: 'coo' },
+        { id: '3', title: 'SABI email agent setup', description: 'Build 19-step MEP estimation workflow', status: 'in-progress', priority: 'high', due_date: '2026-02-28', created_at: '2026-02-21T10:00:00Z', agent_id: 'cto' },
+        { id: '4', title: 'Jotform POC delivery', description: 'Dubai Media City - 4 approval levels', status: 'in-progress', priority: 'high', due_date: '2026-02-24', created_at: '2026-02-20T09:00:00Z', agent_id: 'cro' },
+        { id: '5', title: 'Collect outstanding invoices', description: '₹1Cr outstanding - start recovery calls', status: 'pending', priority: 'critical', due_date: '2026-03-01', created_at: '2026-02-19T11:00:00Z', agent_id: 'cfo' },
+        { id: '6', title: 'Hospital occupancy marketing', description: 'Doctor referral outreach campaign', status: 'pending', priority: 'medium', due_date: '2026-02-28', created_at: '2026-02-18T14:00:00Z', agent_id: 'cmo' },
+      ])
       setLoading(false)
     })
   }, [])

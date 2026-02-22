@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Users, DollarSign, BarChart3, CheckSquare, FileText, Settings,
   ArrowRight, CheckCircle, Pause, Zap, AlertCircle
 } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
+import { getAgents, type Agent } from '../lib/agentData'
 import PageTransition from '../components/PageTransition'
-import { CardSkeleton } from '../components/LoadingSkeleton'
 
 const iconMap: Record<string, typeof Users> = {
   cmo: Users, cro: DollarSign, cfo: BarChart3, coo: CheckSquare, cto: Settings, cxo: FileText,
@@ -35,22 +33,7 @@ const statusStyle = (s: string) => {
 }
 
 const Agents = () => {
-  const [agents, setAgents] = useState<Agent[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    apiAgents.list()
-      .then(setAgents)
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (loading) return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {[1,2,3,4,5,6].map(i => <CardSkeleton key={i} />)}
-    </div>
-  )
-
+  const agents = getAgents()
   const activeCount = agents.filter(a => a.status === 'active' || a.status === 'working').length
 
   return (
@@ -61,7 +44,6 @@ const Agents = () => {
           <p className="text-sm text-gray-500 mt-1">Your AI-powered executive team</p>
         </div>
 
-        {/* Summary */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { label: 'Total Agents', value: agents.length, color: 'text-blue-400' },
@@ -76,21 +58,12 @@ const Agents = () => {
           ))}
         </div>
 
-        {/* Agent Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {agents.map((agent, i) => {
+          {agents.map((agent: Agent, i: number) => {
             const Icon = iconMap[agent.role] || Users
             return (
-              <motion.div
-                key={agent.role}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-              >
-                <Link
-                  to={`/dashboard/agents/${agent.role}`}
-                  className="card-hover block group"
-                >
+              <motion.div key={agent.role} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                <Link to={`/dashboard/agents/${agent.role}`} className="card-hover block group">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${colorMap[agent.role] || 'from-gray-500 to-gray-400'} flex items-center justify-center text-white shadow-lg`}>

@@ -11,8 +11,6 @@ import {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Agents', href: '/dashboard/agents', icon: Users },
-  { name: 'Emails', href: '/dashboard/emails', icon: Mail },
-  { name: 'CRM', href: '/dashboard/crm', icon: Briefcase },
   { name: '💰 CFO Dashboard', href: '/dashboard/cfo', icon: Wallet },
   { name: '📋 Claims', href: '/dashboard/claims', icon: ClipboardList },
   { name: '🧾 Invoices', href: '/dashboard/invoices', icon: Receipt },
