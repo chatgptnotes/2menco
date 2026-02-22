@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import { TrendingUp, AlertTriangle, IndianRupee, Clock, CheckCircle2, XCircle } from 'lucide-react'
-import { fetchClaims, fetchCfoInvoices, fetchRecentFollowups, getClaimsStats, Claim, CfoInvoice } from '../lib/cfo-api'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { TrendingUp, AlertTriangle, IndianRupee, Clock, CheckCircle2, FileText, Users } from 'lucide-react'
+import { fetchBills, fetchBillsSummary, fetchBillsCount, fetchEsicPipeline, fetchFollowUpTasks, getStagesSummary, Bill, EsicExtraction } from '../lib/cfo-api'
 
-const PAYER_COLORS: Record<string, string> = { ESIC: '#3B82F6', CGHS: '#8B5CF6', ECHS: '#F59E0B', Private: '#EC4899', Other: '#6B7280' }
-const STATUS_COLORS: Record<string, string> = { pending: '#6B7280', submitted: '#3B82F6', under_review: '#F59E0B', approved: '#10B981', partially_approved: '#34D399', denied: '#EF4444', appealed: '#F97316', recovered: '#059669', written_off: '#374151' }
-
-const formatINR = (n: number) => '₹' + (n >= 100000 ? (n / 100000).toFixed(1) + 'L' : n.toLocaleString('en-IN'))
+const formatINR = (n: number) => '₹' + (n >= 10000000 ? (n / 10000000).toFixed(2) + 'Cr' : n >= 100000 ? (n / 100000).toFixed(1) + 'L' : n.toLocaleString('en-IN'))
 
 const CircularProgress = ({ value, max, label }: { value: number; max: number; label: string }) => {
-  const pct = Math.min((value / max) * 100, 100)
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0
   const r = 70, c = 2 * Math.PI * r
   return (
     <div className="flex flex-col items-center">
@@ -21,8 +18,8 @@ const CircularProgress = ({ value, max, label }: { value: number; max: number; l
           transition={{ duration: 1.5, ease: 'easeOut' }} />
       </svg>
       <div className="absolute mt-12 text-center">
-        <p className="text-3xl font-bold text-white">{formatINR(value)}</p>
-        <p className="text-xs text-gray-400">of {formatINR(max)}</p>
+        <p className="text-3xl font-bold text-white">{value.toLocaleString()}</p>
+        <p className="text-xs text-gray-400">of {max.toLocaleString()}</p>
         <p className="text-sm text-emerald-400 font-semibold mt-1">{pct.toFixed(1)}%</p>
       </div>
       <p className="text-sm text-gray-400 mt-2">{label}</p>
@@ -30,44 +27,51 @@ const CircularProgress = ({ value, max, label }: { value: number; max: number; l
   )
 }
 
+const STAGE_COLORS = ['#3B82F6', '#8B5CF6', '#F59E0B', '#EC4899', '#10B981', '#EF4444', '#06B6D4', '#F97316', '#84CC16', '#A855F7', '#14B8A6', '#E11D48', '#6366F1', '#22D3EE', '#FB923C', '#4ADE80']
+
 const CFO = () => {
-  const [claims, setClaims] = useState<Claim[]>([])
-  const [invoices, setInvoices] = useState<CfoInvoice[]>([])
-  const [followups, setFollowups] = useState<any[]>([])
+  const [esic, setEsic] = useState<EsicExtraction | null>(null)
+  const [recentBills, setRecentBills] = useState<Bill[]>([])
+  const [, setSummary] = useState<any>(null)
+  const [billsCount, setBillsCount] = useState(0)
+  const [tasks, setTasks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([fetchClaims(), fetchCfoInvoices(), fetchRecentFollowups(5)])
-      .then(([c, i, f]) => { setClaims(c); setInvoices(i); setFollowups(f) })
+    Promise.all([
+      fetchEsicPipeline(),
+      fetchBills({ limit: 10 }),
+      fetchBillsSummary(),
+      fetchBillsCount(),
+      fetchFollowUpTasks(),
+    ])
+      .then(([e, b, s, c, t]) => { setEsic(e); setRecentBills(b); setSummary(s); setBillsCount(c); setTasks(t) })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>
 
-  const stats = getClaimsStats(claims)
-  const pieData = Object.entries(stats.byPayer).map(([name, value]) => ({ name, value }))
-  const barData = Object.entries(stats.byStatus).map(([name, count]) => ({ name: name.replace('_', ' '), count }))
-  const overdueInvoices = invoices.filter(i => i.status === 'overdue' || (i.status === 'unpaid' && i.due_date && new Date(i.due_date) < new Date()))
-  const totalInvOutstanding = invoices.reduce((s, i) => s + (Number(i.amount) - Number(i.paid_amount)), 0)
+  const stagesSummary = esic ? getStagesSummary(esic.stage_data) : []
+  const barData = stagesSummary.map(s => ({ name: s.stage.length > 20 ? s.stage.slice(0, 18) + '…' : s.stage, count: s.total, fullName: s.stage }))
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">CFO Dashboard</h1>
-          <p className="text-sm text-gray-400">ZeroRiskAgent — Healthcare Revenue Recovery</p>
+          <p className="text-sm text-gray-400">Hope Multispeciality Hospital — Revenue & Claims</p>
         </div>
-        <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20">Hope Hospital</span>
+        <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20">Live Data</span>
       </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Outstanding', value: formatINR(stats.totalOutstanding), icon: IndianRupee, color: 'text-blue-400' },
-          { label: 'Recovered', value: formatINR(stats.totalRecovered), icon: CheckCircle2, color: 'text-emerald-400' },
-          { label: 'Claims Denied', value: String(stats.byStatus['denied'] || 0), icon: XCircle, color: 'text-red-400' },
-          { label: 'Invoices Outstanding', value: formatINR(totalInvOutstanding), icon: Clock, color: 'text-amber-400' },
+          { label: 'Total Bills', value: billsCount.toLocaleString(), icon: FileText, color: 'text-blue-400' },
+          { label: 'ESIC Claims', value: esic ? esic.total_claims.counts.toLocaleString() : '—', icon: CheckCircle2, color: 'text-emerald-400' },
+          { label: 'Inpatient Claims', value: esic ? esic.total_claims.inPatient.toLocaleString() : '—', icon: IndianRupee, color: 'text-violet-400' },
+          { label: 'OPD Claims', value: esic ? esic.total_claims.opd.toLocaleString() : '—', icon: Users, color: 'text-amber-400' },
         ].map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
             className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4">
@@ -82,87 +86,125 @@ const CFO = () => {
 
       {/* Main content */}
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Recovery Progress */}
+        {/* ESIC Pipeline Progress */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
           className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-6 flex flex-col items-center justify-center relative">
-          <h3 className="text-sm font-semibold text-gray-300 mb-4">Recovery Target: ₹1 Crore</h3>
-          <CircularProgress value={stats.totalRecovered} max={10000000} label="Total Recovered" />
+          <h3 className="text-sm font-semibold text-gray-300 mb-4">ESIC Claims Pipeline</h3>
+          {esic && (
+            <CircularProgress
+              value={esic.total_claims.counts}
+              max={2000}
+              label="Total ESIC Claims"
+            />
+          )}
+          <div className="mt-4 flex gap-4 text-xs">
+            <span className="text-blue-400">IP: {esic?.total_claims.inPatient || 0}</span>
+            <span className="text-amber-400">OPD: {esic?.total_claims.opd || 0}</span>
+          </div>
         </motion.div>
 
-        {/* Pie: by payer */}
+        {/* Claims by Stage */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-          className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-6">
-          <h3 className="text-sm font-semibold text-gray-300 mb-4">Claims by Payer Type</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                {pieData.map((d, i) => <Cell key={i} fill={PAYER_COLORS[d.name] || '#6B7280'} />)}
-              </Pie>
-              <Tooltip formatter={(v: number) => formatINR(v)} contentStyle={{ background: '#1F2937', border: 'none', borderRadius: 8, color: '#fff' }} />
-            </PieChart>
-          </ResponsiveContainer>
-        </motion.div>
-
-        {/* Bar: by status */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-          className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-6">
-          <h3 className="text-sm font-semibold text-gray-300 mb-4">Claims by Status</h3>
-          <ResponsiveContainer width="100%" height={200}>
+          className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-6 lg:col-span-2">
+          <h3 className="text-sm font-semibold text-gray-300 mb-4">Claims by Pipeline Stage</h3>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart data={barData}>
-              <XAxis dataKey="name" tick={{ fill: '#9CA3AF', fontSize: 10 }} angle={-30} textAnchor="end" height={60} />
+              <XAxis dataKey="name" tick={{ fill: '#9CA3AF', fontSize: 9 }} angle={-35} textAnchor="end" height={80} />
               <YAxis tick={{ fill: '#9CA3AF', fontSize: 11 }} allowDecimals={false} />
-              <Tooltip contentStyle={{ background: '#1F2937', border: 'none', borderRadius: 8, color: '#fff' }} />
+              <Tooltip
+                contentStyle={{ background: '#1F2937', border: 'none', borderRadius: 8, color: '#fff' }}
+                labelFormatter={(_, payload) => payload?.[0]?.payload?.fullName || ''}
+              />
               <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                {barData.map((d, i) => <Cell key={i} fill={STATUS_COLORS[d.name.replace(' ', '_')] || '#6B7280'} />)}
+                {barData.map((_, i) => (
+                  <motion.rect key={i} fill={STAGE_COLORS[i % STAGE_COLORS.length]} />
+                ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
       </div>
 
+      {/* ESIC Stage Details */}
+      {stagesSummary.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-6">
+          <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-emerald-400" /> ESIC Pipeline Detail
+          </h3>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {stagesSummary.map((s, i) => (
+              <div key={i} className="p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm text-white font-medium truncate">{s.stage}</p>
+                  <span className="text-sm font-bold text-emerald-400 ml-2">{s.total}</span>
+                </div>
+                <div className="space-y-1">
+                  {s.statuses.slice(0, 3).map((st, j) => (
+                    <div key={j} className="flex justify-between text-xs">
+                      <span className={`truncate mr-2 ${st.isHighlighted ? 'text-amber-400' : 'text-gray-400'}`}>{st.status}</span>
+                      <span className="text-gray-300 flex-shrink-0">{st.counts} <span className="text-gray-500">(IP:{st.inPatient} OPD:{st.opd})</span></span>
+                    </div>
+                  ))}
+                  {s.statuses.length > 3 && <p className="text-[10px] text-gray-500">+{s.statuses.length - 3} more</p>}
+                </div>
+                {s.highlighted.length > 0 && (
+                  <div className="mt-2 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3 text-amber-400" />
+                    <span className="text-[10px] text-amber-400">{s.highlighted.length} need attention</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* Bottom row */}
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Overdue Invoices */}
+        {/* Recent Bills */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
           className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-6">
           <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-4 h-4 text-red-400" />
-            <h3 className="text-sm font-semibold text-gray-300">Overdue / Urgent Invoices</h3>
+            <FileText className="w-4 h-4 text-blue-400" />
+            <h3 className="text-sm font-semibold text-gray-300">Recent Bills</h3>
+            <span className="text-xs text-gray-500 ml-auto">{billsCount.toLocaleString()} total</span>
           </div>
-          {overdueInvoices.length === 0 ? (
-            <p className="text-sm text-gray-500">No overdue invoices 🎉</p>
-          ) : (
-            <div className="space-y-3">
-              {overdueInvoices.map(inv => (
-                <div key={inv.id} className="flex items-center justify-between p-3 rounded-lg bg-red-500/5 border border-red-500/10">
-                  <div>
-                    <p className="text-sm text-white font-medium">{inv.client_name}</p>
-                    <p className="text-xs text-gray-400">{inv.invoice_number} · Due {inv.due_date}</p>
-                  </div>
-                  <span className="text-sm font-bold text-red-400">{formatINR(Number(inv.amount) - Number(inv.paid_amount))}</span>
+          <div className="space-y-2">
+            {recentBills.slice(0, 8).map(bill => (
+              <div key={bill.id} className="flex items-center justify-between p-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-white truncate">{bill.patient_name}</p>
+                  <p className="text-[10px] text-gray-500">{bill.bill_no} · {bill.claim_id} · {bill.patient_corporate || bill.category}</p>
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="text-right ml-3">
+                  <p className="text-sm font-medium text-white">{formatINR(bill.total_amount)}</p>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-500/10 text-gray-400 border border-gray-500/20">{bill.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </motion.div>
 
-        {/* Recent Followups */}
+        {/* Follow-up Tasks */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
           className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-6">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-4 h-4 text-blue-400" />
-            <h3 className="text-sm font-semibold text-gray-300">Recent Follow-ups</h3>
+            <Clock className="w-4 h-4 text-amber-400" />
+            <h3 className="text-sm font-semibold text-gray-300">Follow-up Tasks</h3>
           </div>
-          <div className="space-y-3">
-            {followups.map((f: any) => (
-              <div key={f.id} className="flex gap-3 p-3 rounded-lg bg-white/[0.02]">
-                <div className="w-2 h-2 rounded-full bg-blue-400 mt-1.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm text-white">{f.action}</p>
-                  <p className="text-xs text-gray-400">{f.claims?.patient_name || 'Unknown'} · {f.claims?.claim_number}</p>
-                  {f.response && <p className="text-xs text-gray-500 mt-1">↳ {f.response}</p>}
-                  <p className="text-[10px] text-gray-600 mt-1">{new Date(f.followup_date).toLocaleDateString()}</p>
+          <div className="space-y-2">
+            {tasks.length === 0 ? (
+              <p className="text-sm text-gray-500">No follow-up tasks yet</p>
+            ) : tasks.slice(0, 8).map((t: any) => (
+              <div key={t.id} className="flex gap-3 p-2 rounded-lg bg-white/[0.02]">
+                <div className="w-2 h-2 rounded-full bg-amber-400 mt-1.5 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-white truncate">{t.title}</p>
+                  <p className="text-xs text-gray-400">{t.follow_ups?.name || ''} · {t.follow_ups?.organization || ''}</p>
+                  {t.due_date && <p className="text-[10px] text-gray-500">{new Date(t.due_date).toLocaleDateString()}</p>}
                 </div>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full self-start ${t.status === 'done' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>{t.status}</span>
               </div>
             ))}
           </div>

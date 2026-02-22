@@ -1,0 +1,6 @@
+import { createClient } from '@supabase/supabase-js'
+
+const adamritUrl = import.meta.env.VITE_ADAMRIT_SUPABASE_URL || 'https://xvkxccqaopbnkvwgyfjv.supabase.co'
+const adamritKey = import.meta.env.VITE_ADAMRIT_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2a3hjY3Fhb3Bibmt2d2d5Zmp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4MjMwMTIsImV4cCI6MjA2MzM5OTAxMn0.z9UkKHDm4RPMs_2IIzEPEYzd3-sbQSF6XpxaQg3vZhU'
+
+export const adamrit = createClient(adamritUrl, adamritKey)

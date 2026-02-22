@@ -1,83 +1,119 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, X, ChevronDown, Sparkles, MessageSquare } from 'lucide-react'
-import { fetchClaims, fetchFollowups, createClaim, Claim, ClaimFollowup } from '../lib/cfo-api'
+import { Search, X, ChevronDown, TrendingUp, AlertTriangle } from 'lucide-react'
+import { fetchBills, fetchEsicPipeline, getStagesSummary, Bill, EsicExtraction } from '../lib/cfo-api'
 
 const STATUS_BADGE: Record<string, string> = {
-  pending: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
-  submitted: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  under_review: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  approved: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  partially_approved: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
-  denied: 'bg-red-500/10 text-red-400 border-red-500/20',
-  appealed: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-  recovered: 'bg-green-500/10 text-green-300 border-green-500/20',
-  written_off: 'bg-gray-600/10 text-gray-500 border-gray-600/20',
+  DRAFT: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+  PENDING: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  PARTIAL: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  PAID: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  APPROVED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  DENIED: 'bg-red-500/10 text-red-400 border-red-500/20',
 }
 
 const formatINR = (n: number) => '₹' + Number(n).toLocaleString('en-IN')
-const PAYER_TYPES = ['', 'ESIC', 'CGHS', 'ECHS', 'Private', 'Other']
-const STATUSES = ['', 'pending', 'submitted', 'under_review', 'approved', 'partially_approved', 'denied', 'appealed', 'recovered', 'written_off']
+const CORPORATE_TYPES = ['', 'ESIC', 'CGHS', 'ECHS', 'private', 'ayushman']
+const STATUSES = ['', 'DRAFT', 'PENDING', 'PARTIAL', 'PAID', 'APPROVED', 'DENIED']
 
 const Claims = () => {
-  const [claims, setClaims] = useState<Claim[]>([])
+  const [bills, setBills] = useState<Bill[]>([])
+  const [esic, setEsic] = useState<EsicExtraction | null>(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [payerFilter, setPayerFilter] = useState('')
+  const [corpFilter, setCorpFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [selected, setSelected] = useState<Claim | null>(null)
-  const [followups, setFollowups] = useState<ClaimFollowup[]>([])
-  const [showAdd, setShowAdd] = useState(false)
-  const [newClaim, setNewClaim] = useState({ patient_name: '', payer_type: 'ESIC', claim_amount: '', claim_number: '' })
+  const [selected, setSelected] = useState<Bill | null>(null)
+  const [showPipeline, setShowPipeline] = useState(true)
 
   const load = () => {
     setLoading(true)
-    fetchClaims({ payer_type: payerFilter || undefined, status: statusFilter || undefined })
-      .then(setClaims).catch(console.error).finally(() => setLoading(false))
+    Promise.all([
+      fetchBills({ status: statusFilter || undefined, limit: 200 }),
+      fetchEsicPipeline(),
+    ])
+      .then(([b, e]) => { setBills(b); setEsic(e) })
+      .catch(console.error)
+      .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [payerFilter, statusFilter])
+  useEffect(() => { load() }, [statusFilter])
 
-  const openDetail = async (c: Claim) => {
-    setSelected(c)
-    const f = await fetchFollowups(c.id)
-    setFollowups(f)
-  }
+  const filtered = bills.filter(b => {
+    if (corpFilter && b.patient_corporate?.toLowerCase() !== corpFilter.toLowerCase()) return false
+    if (search) {
+      const s = search.toLowerCase()
+      return (b.patient_name?.toLowerCase().includes(s) || b.claim_id?.toLowerCase().includes(s) || b.bill_no?.toLowerCase().includes(s))
+    }
+    return true
+  })
 
-  const handleAdd = async () => {
-    if (!newClaim.patient_name || !newClaim.claim_amount) return
-    await createClaim({ patient_name: newClaim.patient_name, payer_type: newClaim.payer_type as any, claim_amount: Number(newClaim.claim_amount), claim_number: newClaim.claim_number || undefined })
-    setShowAdd(false)
-    setNewClaim({ patient_name: '', payer_type: 'ESIC', claim_amount: '', claim_number: '' })
-    load()
-  }
-
-  const filtered = claims.filter(c => !search || c.patient_name.toLowerCase().includes(search.toLowerCase()) || c.claim_number?.toLowerCase().includes(search.toLowerCase()))
+  const stagesSummary = esic ? getStagesSummary(esic.stage_data) : []
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Claims Management</h1>
-          <p className="text-sm text-gray-400">{claims.length} claims · {formatINR(claims.reduce((s, c) => s + Number(c.claim_amount), 0))} total</p>
+          <h1 className="text-2xl font-bold text-white">Claims & Bills</h1>
+          <p className="text-sm text-gray-400">{bills.length} bills loaded · ESIC: {esic?.total_claims.counts || 0} claims in pipeline</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium transition-colors">
-          <Plus className="w-4 h-4" /> Add Claim
+        <button onClick={() => setShowPipeline(!showPipeline)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-colors">
+          <TrendingUp className="w-4 h-4" /> {showPipeline ? 'Hide' : 'Show'} ESIC Pipeline
         </button>
       </div>
+
+      {/* ESIC Pipeline */}
+      <AnimatePresence>
+        {showPipeline && esic && stagesSummary.length > 0 && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+            className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-6 overflow-hidden">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <h3 className="text-sm font-semibold text-gray-300">ESIC Pipeline — {esic.total_claims.counts} claims ({esic.total_claims.inPatient} IP, {esic.total_claims.opd} OPD)</h3>
+            </div>
+            {/* Pipeline flow */}
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {stagesSummary.map((s, i) => (
+                <div key={i} className="flex-shrink-0 w-48 p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-gray-300 font-medium truncate" title={s.stage}>{s.stage}</p>
+                    <span className="text-sm font-bold text-emerald-400 ml-1">{s.total}</span>
+                  </div>
+                  <div className="space-y-1">
+                    {s.statuses.slice(0, 4).map((st, j) => (
+                      <div key={j} className="flex justify-between text-[10px]">
+                        <span className={`truncate mr-1 ${st.isHighlighted ? 'text-amber-400' : 'text-gray-500'}`}>{st.status}</span>
+                        <span className="text-gray-400 flex-shrink-0">{st.counts}</span>
+                      </div>
+                    ))}
+                    {s.statuses.length > 4 && <p className="text-[9px] text-gray-600">+{s.statuses.length - 4} more</p>}
+                  </div>
+                  {s.highlighted.length > 0 && (
+                    <div className="mt-1 flex items-center gap-1">
+                      <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />
+                      <span className="text-[9px] text-amber-400">{s.highlighted.length} flagged</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search patient or claim #..."
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search patient, claim ID, bill #..."
             className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-white text-sm placeholder-gray-500 focus:outline-none focus:border-emerald-500/50" />
         </div>
         <div className="relative">
-          <select value={payerFilter} onChange={e => setPayerFilter(e.target.value)}
+          <select value={corpFilter} onChange={e => setCorpFilter(e.target.value)}
             className="appearance-none px-4 py-2 pr-8 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-300 text-sm focus:outline-none">
-            <option value="">All Payers</option>
-            {PAYER_TYPES.filter(Boolean).map(p => <option key={p} value={p}>{p}</option>)}
+            <option value="">All Corporate</option>
+            {CORPORATE_TYPES.filter(Boolean).map(p => <option key={p} value={p}>{p.toUpperCase()}</option>)}
           </select>
           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
         </div>
@@ -85,7 +121,7 @@ const Claims = () => {
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
             className="appearance-none px-4 py-2 pr-8 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-300 text-sm focus:outline-none">
             <option value="">All Statuses</option>
-            {STATUSES.filter(Boolean).map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
+            {STATUSES.filter(Boolean).map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
         </div>
@@ -100,23 +136,27 @@ const Claims = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-                  {['Patient', 'Claim #', 'Payer', 'Amount', 'Recovered', 'Status', 'Next Follow-up'].map(h => (
+                  {['Patient', 'UHID', 'Bill #', 'Claim ID', 'Corporate', 'Amount', 'Status', 'Date'].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
-                {filtered.map(c => (
-                  <tr key={c.id} onClick={() => openDetail(c)} className="hover:bg-white/[0.02] cursor-pointer transition-colors">
-                    <td className="px-4 py-3 text-white font-medium">{c.patient_name}</td>
-                    <td className="px-4 py-3 text-gray-400 font-mono text-xs">{c.claim_number}</td>
-                    <td className="px-4 py-3"><span className="px-2 py-0.5 rounded text-xs font-medium" style={{ color: c.payer_type === 'ESIC' ? '#3B82F6' : c.payer_type === 'CGHS' ? '#8B5CF6' : '#F59E0B' }}>{c.payer_type}</span></td>
-                    <td className="px-4 py-3 text-white">{formatINR(c.claim_amount)}</td>
-                    <td className="px-4 py-3 text-emerald-400">{formatINR(c.recovered_amount)}</td>
-                    <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs border ${STATUS_BADGE[c.status] || STATUS_BADGE.pending}`}>{c.status.replace('_', ' ')}</span></td>
-                    <td className="px-4 py-3 text-gray-400 text-xs">{c.next_followup || '—'}</td>
+                {filtered.map(b => (
+                  <tr key={b.id} onClick={() => setSelected(b)} className="hover:bg-white/[0.02] cursor-pointer transition-colors">
+                    <td className="px-4 py-3 text-white font-medium truncate max-w-[200px]">{b.patient_name}</td>
+                    <td className="px-4 py-3 text-gray-400 font-mono text-xs">{b.patient_uhid}</td>
+                    <td className="px-4 py-3 text-gray-400 font-mono text-xs">{b.bill_no}</td>
+                    <td className="px-4 py-3 text-gray-400 font-mono text-xs">{b.claim_id}</td>
+                    <td className="px-4 py-3"><span className="text-xs text-blue-400">{(b.patient_corporate || b.category || '').toUpperCase()}</span></td>
+                    <td className="px-4 py-3 text-white">{formatINR(b.total_amount)}</td>
+                    <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs border ${STATUS_BADGE[b.status] || STATUS_BADGE.DRAFT}`}>{b.status}</span></td>
+                    <td className="px-4 py-3 text-gray-400 text-xs">{b.date || '—'}</td>
                   </tr>
                 ))}
+                {filtered.length === 0 && (
+                  <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500">No bills found</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -137,87 +177,20 @@ const Claims = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    ['Claim #', selected.claim_number],
-                    ['Payer', `${selected.payer_type} — ${selected.payer_name || ''}`],
-                    ['Amount', formatINR(selected.claim_amount)],
-                    ['Approved', selected.approved_amount ? formatINR(selected.approved_amount) : '—'],
-                    ['Recovered', formatINR(selected.recovered_amount)],
-                    ['Status', selected.status.replace('_', ' ')],
-                    ['Submitted', selected.submission_date || '—'],
-                    ['Next Follow-up', selected.next_followup || '—'],
+                    ['Bill #', selected.bill_no],
+                    ['Claim ID', selected.claim_id],
+                    ['UHID', selected.patient_uhid],
+                    ['Corporate', (selected.patient_corporate || '').toUpperCase()],
+                    ['Category', selected.category],
+                    ['Amount', formatINR(selected.total_amount)],
+                    ['Status', selected.status],
+                    ['Date', selected.date || '—'],
                   ].map(([l, v]) => (
                     <div key={l as string}>
                       <p className="text-xs text-gray-500">{l}</p>
                       <p className="text-sm text-white font-medium">{v}</p>
                     </div>
                   ))}
-                </div>
-                {selected.denial_reason && (
-                  <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/10">
-                    <p className="text-xs text-red-400 font-medium mb-1">Denial Reason</p>
-                    <p className="text-sm text-gray-300">{selected.denial_reason}</p>
-                  </div>
-                )}
-                {selected.notes && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Notes</p>
-                    <p className="text-sm text-gray-300">{selected.notes}</p>
-                  </div>
-                )}
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-400 text-sm font-medium hover:bg-violet-500/20 transition-colors w-full justify-center">
-                  <Sparkles className="w-4 h-4" /> Generate AI Appeal
-                </button>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2"><MessageSquare className="w-4 h-4" /> Follow-up Log</h3>
-                  <div className="space-y-2">
-                    {followups.length === 0 ? <p className="text-xs text-gray-500">No follow-ups yet</p> : followups.map(f => (
-                      <div key={f.id} className="p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                        <p className="text-sm text-white">{f.action}</p>
-                        {f.response && <p className="text-xs text-gray-400 mt-1">↳ {f.response}</p>}
-                        <div className="flex gap-4 mt-1">
-                          <span className="text-[10px] text-gray-500">By: {f.followup_by || '—'}</span>
-                          <span className="text-[10px] text-gray-500">{new Date(f.followup_date).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Add Modal */}
-      <AnimatePresence>
-        {showAdd && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 z-40" onClick={() => setShowAdd(false)} />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="bg-gray-900 border border-white/[0.06] rounded-xl p-6 w-full max-w-md space-y-4">
-                <h2 className="text-lg font-bold text-white">Add New Claim</h2>
-                {[
-                  { label: 'Patient Name', key: 'patient_name', type: 'text' },
-                  { label: 'Claim Number', key: 'claim_number', type: 'text' },
-                  { label: 'Claim Amount (₹)', key: 'claim_amount', type: 'number' },
-                ].map(f => (
-                  <div key={f.key}>
-                    <label className="text-xs text-gray-400">{f.label}</label>
-                    <input type={f.type} value={(newClaim as any)[f.key]} onChange={e => setNewClaim(p => ({ ...p, [f.key]: e.target.value }))}
-                      className="w-full mt-1 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-white text-sm focus:outline-none focus:border-emerald-500/50" />
-                  </div>
-                ))}
-                <div>
-                  <label className="text-xs text-gray-400">Payer Type</label>
-                  <select value={newClaim.payer_type} onChange={e => setNewClaim(p => ({ ...p, payer_type: e.target.value }))}
-                    className="w-full mt-1 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-white text-sm focus:outline-none">
-                    {PAYER_TYPES.filter(Boolean).map(p => <option key={p} value={p}>{p}</option>)}
-                  </select>
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 rounded-lg border border-white/[0.06] text-gray-400 text-sm hover:bg-white/[0.03]">Cancel</button>
-                  <button onClick={handleAdd} className="flex-1 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600">Add Claim</button>
                 </div>
               </div>
             </motion.div>
