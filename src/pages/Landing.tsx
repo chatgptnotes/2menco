@@ -6,12 +6,12 @@ import {
 } from 'lucide-react'
 
 const agents = [
-  { type: 'CMO', title: 'Digital CMO', desc: 'AI-powered marketing & lead generation', icon: Users, color: 'from-blue-500 to-cyan-500', glow: 'shadow-blue-500/20' },
-  { type: 'CRO', title: 'Digital CRO', desc: 'Sales optimization & revenue growth', icon: DollarSign, color: 'from-emerald-500 to-green-500', glow: 'shadow-emerald-500/20' },
-  { type: 'CFO', title: 'Digital CFO', desc: 'Financial management & forecasting', icon: BarChart3, color: 'from-violet-500 to-purple-500', glow: 'shadow-violet-500/20' },
-  { type: 'COO', title: 'Digital COO', desc: 'Operations & process automation', icon: CheckSquare, color: 'from-orange-500 to-amber-500', glow: 'shadow-orange-500/20' },
-  { type: 'CTO', title: 'Digital CTO', desc: 'Technology strategy & architecture', icon: Settings, color: 'from-indigo-500 to-blue-500', glow: 'shadow-indigo-500/20' },
-  { type: 'CXO', title: 'Digital CXO', desc: 'Customer experience & satisfaction', icon: FileText, color: 'from-pink-500 to-rose-500', glow: 'shadow-pink-500/20' },
+  { type: 'CMO', title: 'AI CMO Agent', desc: 'Automated lead generation, content marketing, SEO campaigns & multi-channel outreach — your AI CMO software runs 24/7.', icon: Users, color: 'from-blue-500 to-cyan-500', glow: 'shadow-blue-500/20' },
+  { type: 'CRO', title: 'AI CRO Agent', desc: 'Smart deal pipeline management, conversion optimization & revenue forecasting to close more deals faster.', icon: DollarSign, color: 'from-emerald-500 to-green-500', glow: 'shadow-emerald-500/20' },
+  { type: 'CFO', title: 'AI CFO Agent', desc: 'Automated invoicing, claims processing, cash-flow forecasting & zero-risk revenue recovery for healthcare.', icon: BarChart3, color: 'from-violet-500 to-purple-500', glow: 'shadow-violet-500/20' },
+  { type: 'COO', title: 'AI COO Agent', desc: 'Workflow automation, task orchestration, vendor management & operational efficiency optimization.', icon: CheckSquare, color: 'from-orange-500 to-amber-500', glow: 'shadow-orange-500/20' },
+  { type: 'CTO', title: 'AI CTO Agent', desc: 'Technology stack management, system monitoring, architecture decisions & infrastructure automation.', icon: Settings, color: 'from-indigo-500 to-blue-500', glow: 'shadow-indigo-500/20' },
+  { type: 'CXO', title: 'AI CXO Agent', desc: 'Customer satisfaction tracking, support automation, NPS management & experience optimization.', icon: FileText, color: 'from-pink-500 to-rose-500', glow: 'shadow-pink-500/20' },
 ]
 
 const pricing = [
@@ -70,7 +70,7 @@ const Landing = () => {
               System
             </h1>
             <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Deploy 6 autonomous AI agents to run your business. From marketing to finance, automate everything and scale to 1M AED in 9 months.
+              The AI business operating system with 6 autonomous agents for SMBs. Automate lead generation, sales, invoicing, operations, and customer experience — all from one business automation platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
@@ -119,8 +119,8 @@ const Landing = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Your Digital Executive Team</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">Six specialized AI agents working 24/7 to grow your business autonomously</p>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">6 AI Agents for Business — Your Digital Executive Team</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">AI agents for business that work 24/7 — automated business management from marketing to finance</p>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -224,8 +224,8 @@ const Landing = () => {
       {/* CTA */}
       <section className="py-24 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to Build Your Digital Empire?</h2>
-          <p className="text-gray-500 mb-8 text-lg">Start automating your business with AI agents today</p>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to Automate Your Business?</h2>
+          <p className="text-gray-500 mb-8 text-lg">Join SMBs using the AI business operating system to scale faster with automated business management</p>
           <button
             onClick={() => navigate('/dashboard')}
             className="btn bg-white text-gray-900 hover:bg-gray-100 text-base px-8 py-3 font-semibold"
